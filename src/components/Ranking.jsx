@@ -1,9 +1,9 @@
-import { calcRanking } from '../utils/scoring.js'
+import { calcRanking, withRankingPositions } from '../utils/scoring.js'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
 export function Ranking({ players, bets, results, matches }) {
-  const ranking = calcRanking(players, bets, results, matches)
+  const rankedPlayers = withRankingPositions(calcRanking(players, bets, results, matches))
 
   if (players.length === 0) {
     return (
@@ -24,15 +24,14 @@ export function Ranking({ players, bets, results, matches }) {
         <span className="col-bets">Desempenho</span>
       </div>
 
-      {ranking.map((player, i) => {
+      {rankedPlayers.map((player, i) => {
         const betCount    = (bets[player.id] ?? []).length
         const resultCount = results.length
-        const scoredCount = (player.breakdown ?? []).filter(b => b.points > 0).length
 
         return (
           <div key={player.id} className={`ranking-row rank-${i + 1}`}>
             <span className="col-pos">
-              {MEDALS[i] ?? <span className="rank-num">{i + 1}</span>}
+              {MEDALS[player.position - 1] ?? <span className="rank-num">{player.position}</span>}
             </span>
             <span className="col-name">{player.name}</span>
             <span className="col-pts">
@@ -42,7 +41,7 @@ export function Ranking({ players, bets, results, matches }) {
             <span className="col-bets">
               <span className="bet-stat">{betCount} palpites</span>
               {resultCount > 0 && (
-                <span className="bet-stat accent">{scoredCount}/{resultCount} pontuaram</span>
+                <span className="bet-stat accent">{player.scoredHits}/{resultCount} pontuaram</span>
               )}
             </span>
           </div>

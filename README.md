@@ -6,10 +6,12 @@ Dados sincronizados em tempo real via **Firebase Realtime Database** — todos o
 ## Funcionalidades
 
 - 📋 Registro de palpites por jogador, com placar livre
-- ⏰ Deadline automático: palpites bloqueados 2h antes de cada partida
+- ⏰ Deadline automático: palpites bloqueados 10 min antes de cada partida
+- 👀 Palpites dos participantes revelados para todos após o fechamento de cada jogo
 - 🏅 Ranking em tempo real com pontuação atualizada conforme resultados
 - 📈 Multiplicadores por fase: pontos valem mais nas fases finais
 - 🔐 Login por e-mail e senha para cada participante editar apenas os próprios palpites
+- ⏳ Novos cadastros ficam em análise até aprovação manual do admin
 - 🛡️ Painel Admin protegido por permissão real no Firebase
 - 🔄 Chave do mata-mata atualizada automaticamente conforme os resultados oficiais
 - 📖 Regras explicadas na própria plataforma
@@ -159,6 +161,14 @@ Alternativamente, conecte o repositório GitHub ao Netlify para deploy automáti
 | Final | 5× | 25 |
 
 > Pontos finais são arredondados para cima (`Math.ceil`).
+
+### Critério de desempate do ranking
+
+Se dois ou mais participantes empatarem em pontos totais, o ranking usa esta ordem:
+
+1. mais placares exatos
+2. mais jogos em que pontuou
+3. empate real na classificação, se ainda continuar igual
 
 ---
 

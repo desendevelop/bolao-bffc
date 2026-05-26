@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { KeyRound, LogIn, Mail, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, KeyRound, LogIn, Mail, UserPlus } from 'lucide-react'
 
 export function AuthScreen({ onSignIn, onSignUp, onResetPassword, pending }) {
   const [mode, setMode] = useState('login')
@@ -7,8 +7,11 @@ export function AuthScreen({ onSignIn, onSignUp, onResetPassword, pending }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [securityAnswer, setSecurityAnswer] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const clearMessages = () => {
     setError('')
@@ -43,6 +46,11 @@ export function AuthScreen({ onSignIn, onSignUp, onResetPassword, pending }) {
     if (mode === 'signup') {
       if (name.trim().length < 2) {
         setError('Informe seu nome como ele deve aparecer no bolão.')
+        return
+      }
+
+      if (securityAnswer.trim().toLowerCase() !== 'danilo') {
+        setError('Resposta de segurança incorreta.')
         return
       }
 
@@ -84,7 +92,9 @@ export function AuthScreen({ onSignIn, onSignUp, onResetPassword, pending }) {
           <p>
             {mode === 'reset'
               ? 'Informe o e-mail da conta e o Firebase enviará um link para redefinir a senha.'
-              : 'Cada participante usa seu próprio e-mail e senha para editar apenas os próprios palpites.'}
+              : mode === 'signup'
+                ? 'Crie sua conta e aguarde a aprovação do administrador para entrar no bolão.'
+                : 'Cada participante usa seu próprio e-mail e senha para editar apenas os próprios palpites.'}
           </p>
         </div>
 
@@ -130,6 +140,23 @@ export function AuthScreen({ onSignIn, onSignUp, onResetPassword, pending }) {
             </label>
           )}
 
+          {mode === 'signup' && (
+            <label className="control-group">
+              <span className="control-label">Pergunta de segurança</span>
+              <span className="security-question">O que é o que é, tem 30 anos mas é tiozão do zap?</span>
+              <input
+                className="input-field"
+                value={securityAnswer}
+                onChange={event => {
+                  setSecurityAnswer(event.target.value)
+                  clearMessages()
+                }}
+                placeholder="Sua resposta"
+                maxLength={40}
+              />
+            </label>
+          )}
+
           <label className="control-group">
             <span className="control-label">E-mail</span>
             <div className="input-with-icon">
@@ -151,34 +178,54 @@ export function AuthScreen({ onSignIn, onSignUp, onResetPassword, pending }) {
           {mode !== 'reset' && (
             <label className="control-group">
               <span className="control-label">Senha</span>
-              <input
-                type="password"
-                className="input-field"
-                value={password}
-                onChange={event => {
-                  setPassword(event.target.value)
-                  clearMessages()
-                }}
-                placeholder="Mínimo de 6 caracteres"
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              />
+              <div className="password-field">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="input-field"
+                  value={password}
+                  onChange={event => {
+                    setPassword(event.target.value)
+                    clearMessages()
+                  }}
+                  placeholder="Mínimo de 6 caracteres"
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(current => !current)}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </label>
           )}
 
           {mode === 'signup' && (
             <label className="control-group">
               <span className="control-label">Confirmar senha</span>
-              <input
-                type="password"
-                className="input-field"
-                value={confirmPassword}
-                onChange={event => {
-                  setConfirmPassword(event.target.value)
-                  clearMessages()
-                }}
-                placeholder="Repita a senha"
-                autoComplete="new-password"
-              />
+              <div className="password-field">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  className="input-field"
+                  value={confirmPassword}
+                  onChange={event => {
+                    setConfirmPassword(event.target.value)
+                    clearMessages()
+                  }}
+                  placeholder="Repita a senha"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword(current => !current)}
+                  aria-label={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </label>
           )}
 

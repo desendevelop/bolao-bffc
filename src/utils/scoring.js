@@ -95,13 +95,15 @@ export function calcPoints(bet, result, phase) {
  * @param {object[]} bets    - array de { matchId, homeGoals, awayGoals }
  * @param {object[]} results - array de { matchId, homeGoals, awayGoals }
  * @param {object[]} matches - array de { id, phase }
- * @returns {{ total: number, breakdown: object[] }}
+ * @returns {{ total: number, exactHits: number, scoredHits: number, breakdown: object[] }}
  */
 export function calcPlayerScore(playerId, bets, results, matches) {
   const betMap    = Object.fromEntries(bets.map(b => [b.matchId, b]))
   const resultMap = Object.fromEntries(results.map(r => [r.matchId, r]))
 
   let total = 0
+  let exactHits = 0
+  let scoredHits = 0
   const breakdown = []
 
   for (const match of matches) {
@@ -113,6 +115,8 @@ export function calcPlayerScore(playerId, bets, results, matches) {
     const base   = bet ? calcBasePoints(bet, result) : 0
 
     total += points
+    if (base === 5) exactHits += 1
+    if (points > 0) scoredHits += 1
     breakdown.push({
       matchId: match.id,
       phase: match.phase,
@@ -124,7 +128,42 @@ export function calcPlayerScore(playerId, bets, results, matches) {
     })
   }
 
-  return { total, breakdown }
+  return { total, exactHits, scoredHits, breakdown }
+}
+
+/**
+ * Compara dois jogadores pelo critério oficial do ranking.
+ * Ordem: pontos totais, placares exatos, jogos pontuados.
+ *
+ * @param {object} left
+ * @param {object} right
+ * @returns {number}
+ */
+export function compareRankingEntries(left, right) {
+  return (
+    right.total - left.total ||
+    right.exactHits - left.exactHits ||
+    right.scoredHits - left.scoredHits
+  )
+}
+
+/**
+ * Atribui posições ao ranking, preservando empate real quando os critérios
+ * de desempate ainda não separarem dois participantes.
+ *
+ * @param {object[]} ranking
+ * @returns {object[]}
+ */
+export function withRankingPositions(ranking) {
+  return ranking.reduce((acc, player, index) => {
+    const previous = acc[index - 1]
+    const position = previous && compareRankingEntries(previous, player) === 0
+      ? previous.position
+      : index + 1
+
+    acc.push({ ...player, position })
+    return acc
+  }, [])
 }
 
 /**
@@ -134,7 +173,7 @@ export function calcPlayerScore(playerId, bets, results, matches) {
  * @param {object}   betsDB  - { [playerId]: [{ matchId, homeGoals, awayGoals }] }
  * @param {object[]} results - [{ matchId, homeGoals, awayGoals }]
  * @param {object[]} matches - [{ id, phase }]
- * @returns {object[]} jogadores ordenados por pontuação desc
+ * @returns {object[]} jogadores ordenados por pontos, exatos e jogos pontuados
  */
 export function calcRanking(players, betsDB, results, matches) {
   return players
@@ -143,5 +182,34 @@ export function calcRanking(players, betsDB, results, matches) {
       const score = calcPlayerScore(player.id, bets, results, matches)
       return { ...player, ...score }
     })
-    .sort((a, b) => b.total - a.total)
+    .sort(compareRankingEntries)
+}
+
+/**
+ * Gera a evolução do ranking após cada resultado lançado.
+ *
+ * @param {object[]} players
+ * @param {object} betsDB
+ * @param {object[]} results
+ * @param {object[]} matches
+ * @returns {object[]}
+ */
+export function calcRankingHistory(players, betsDB, results, matches) {
+  const resultMap = Object.fromEntries(results.map(result => [result.matchId, result]))
+  const completedMatches = matches.filter(match => !!resultMap[match.id])
+  const partialResults = []
+  const snapshots = []
+
+  for (const match of completedMatches) {
+    partialResults.push(resultMap[match.id])
+
+    snapshots.push({
+      matchId: match.id,
+      phase: match.phase,
+      date: match.date,
+      ranking: withRankingPositions(calcRanking(players, betsDB, partialResults, matches)),
+    })
+  }
+
+  return snapshots
 }

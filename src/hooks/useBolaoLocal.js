@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { MATCHES, applyMatchSchedule, getBetDeadline } from '../data/matches.js'
 import { resolveTournamentMatches } from '../utils/tournament.js'
 
 const STORAGE_KEYS = {
@@ -6,6 +7,7 @@ const STORAGE_KEYS = {
   bets: 'bolao.bets',
   results: 'bolao.results',
   matchOverrides: 'bolao.matchOverrides',
+  matchSchedule: 'bolao.matchSchedule',
 }
 
 function readJSON(key, fallback) {
@@ -45,14 +47,22 @@ const LOCAL_FALLBACK_USER = {
   email: 'modo-local@local',
 }
 
+function validateScheduleDate(date) {
+  if (!date || Number.isNaN(new Date(date).getTime())) {
+    throw new Error('Informe uma data/hora valida para o jogo.')
+  }
+}
+
 export function useBolaoLocal(currentUser = LOCAL_FALLBACK_USER) {
   const [players, setPlayers] = useState(() => readJSON(STORAGE_KEYS.players, []))
   const [bets, setBets] = useState(() => readJSON(STORAGE_KEYS.bets, {}))
   const [results, setResults] = useState(() => readJSON(STORAGE_KEYS.results, []))
   const [matchOverrides, setMatchOverrides] = useState(() => readJSON(STORAGE_KEYS.matchOverrides, {}))
+  const [matchSchedule, setMatchSchedule] = useState(() => readJSON(STORAGE_KEYS.matchSchedule, {}))
   const currentUid = currentUser?.uid ?? LOCAL_FALLBACK_USER.uid
   const currentPlayer = players.find(player => player.id === currentUid) ?? null
-  const matches = resolveTournamentMatches(results, matchOverrides)
+  const scheduledMatches = applyMatchSchedule(MATCHES, matchSchedule)
+  const matches = resolveTournamentMatches(results, matchOverrides, scheduledMatches)
 
   useEffect(() => {
     writeJSON(STORAGE_KEYS.players, players)
@@ -69,6 +79,10 @@ export function useBolaoLocal(currentUser = LOCAL_FALLBACK_USER) {
   useEffect(() => {
     writeJSON(STORAGE_KEYS.matchOverrides, matchOverrides)
   }, [matchOverrides])
+
+  useEffect(() => {
+    writeJSON(STORAGE_KEYS.matchSchedule, matchSchedule)
+  }, [matchSchedule])
 
   const saveOwnProfile = useCallback(async (name) => {
     const trimmed = name.trim()
@@ -114,9 +128,23 @@ export function useBolaoLocal(currentUser = LOCAL_FALLBACK_USER) {
     }))
   }, [currentUid])
 
+  const removeBet = useCallback(async (matchId) => {
+    setBets(current => ({
+      ...current,
+      [currentUid]: (current[currentUid] ?? []).filter(bet => bet.matchId !== matchId),
+    }))
+  }, [currentUid])
+
   const getOwnBet = useCallback((matchId) => {
     return (bets[currentUid] ?? []).find(bet => bet.matchId === matchId) ?? null
   }, [bets, currentUid])
+
+  const getVisibleBets = useCallback((matchId) => {
+    return players.map(player => ({
+      player,
+      bet: (bets[player.id] ?? []).find(item => item.matchId === matchId) ?? null,
+    }))
+  }, [bets, players])
 
   const setResult = useCallback(async (matchId, homeGoals, awayGoals, winnerSide = null) => {
     const nextResult = {
@@ -163,6 +191,27 @@ export function useBolaoLocal(currentUser = LOCAL_FALLBACK_USER) {
     })
   }, [])
 
+  const saveMatchSchedule = useCallback(async (matchId, date) => {
+    validateScheduleDate(date)
+
+    setMatchSchedule(current => ({
+      ...current,
+      [matchId]: {
+        date,
+        deadlineMs: getBetDeadline(date).getTime(),
+        updatedAt: new Date().toISOString(),
+      },
+    }))
+  }, [])
+
+  const clearMatchSchedule = useCallback(async (matchId) => {
+    setMatchSchedule(current => {
+      const next = { ...current }
+      delete next[matchId]
+      return next
+    })
+  }, [])
+
   const getResult = useCallback((matchId) => {
     return results.find(result => result.matchId === matchId) ?? null
   }, [results])
@@ -172,6 +221,7 @@ export function useBolaoLocal(currentUser = LOCAL_FALLBACK_USER) {
     bets,
     results,
     matchOverrides,
+    matchSchedule,
     matches,
     loading: false,
     error: null,
@@ -180,11 +230,15 @@ export function useBolaoLocal(currentUser = LOCAL_FALLBACK_USER) {
     currentPlayer,
     saveOwnProfile,
     placeBet,
+    removeBet,
     getOwnBet,
+    getVisibleBets,
     setResult,
     removeResult,
     saveMatchOverride,
     clearMatchOverride,
+    saveMatchSchedule,
+    clearMatchSchedule,
     getResult,
   }
 }

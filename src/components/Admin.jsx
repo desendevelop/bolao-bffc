@@ -1,14 +1,88 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PHASE_CONFIG } from '../data/matches.js'
-import { Shield, Save, Trash2, Lock, Wand2 } from 'lucide-react'
+import { Shield, Save, Trash2, Lock, Wand2, Minus, Plus, ChevronDown, ChevronUp } from 'lucide-react'
 
-function ResultInput({ match, currentResult, currentOverride, onSave, onRemove, onSaveOverride, onClearOverride }) {
+function stepScoreValue(value, delta) {
+  const current = value === '' ? 0 : Number(value)
+  return Math.max(0, Math.min(99, current + delta))
+}
+
+function ScoreInput({ value, onChange }) {
+  return (
+    <div className="score-stepper">
+      <button
+        type="button"
+        className="score-step-btn"
+        onClick={() => onChange(stepScoreValue(value, -1))}
+        disabled={value === '' || Number(value) <= 0}
+        aria-label="Diminuir gols"
+      >
+        <Minus size={14} />
+      </button>
+      <input
+        type="number"
+        className="score-input"
+        min="0"
+        max="99"
+        value={value}
+        onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 2) === '' ? '' : Number(e.target.value.replace(/\D/g, '').slice(0, 2)))}
+        placeholder="0"
+      />
+      <button
+        type="button"
+        className="score-step-btn"
+        onClick={() => onChange(stepScoreValue(value, 1))}
+        disabled={value !== '' && Number(value) >= 99}
+        aria-label="Aumentar gols"
+      >
+        <Plus size={14} />
+      </button>
+    </div>
+  )
+}
+
+function formatAdminMatchDate(dateString) {
+  if (!dateString) return 'Sem data'
+  return new Date(dateString).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function isoToDateTimeLocalValue(dateString) {
+  return typeof dateString === 'string' && dateString.length >= 16
+    ? dateString.slice(0, 16)
+    : ''
+}
+
+function dateTimeLocalValueToIso(value) {
+  if (!value) return ''
+  return `${value}:00-03:00`
+}
+
+function ResultInput({
+  match,
+  currentResult,
+  currentOverride,
+  currentSchedule,
+  onSave,
+  onRemove,
+  onSaveOverride,
+  onClearOverride,
+  onSaveSchedule,
+  onClearSchedule,
+}) {
   const [home, setHome] = useState(currentResult?.homeGoals ?? '')
   const [away, setAway] = useState(currentResult?.awayGoals ?? '')
   const [winnerSide, setWinnerSide] = useState(currentResult?.winnerSide ?? '')
   const [overrideHome, setOverrideHome] = useState(currentOverride?.home ?? match.home)
   const [overrideAway, setOverrideAway] = useState(currentOverride?.away ?? match.away)
   const [overrideFeedback, setOverrideFeedback] = useState('')
+  const [scheduledDate, setScheduledDate] = useState(isoToDateTimeLocalValue(currentSchedule?.date ?? match.date))
+  const [scheduleFeedback, setScheduleFeedback] = useState('')
   const isKnockout = match.phase !== 'group'
   const isDraw = home !== '' && away !== '' && Number(home) === Number(away)
 
@@ -23,6 +97,11 @@ function ResultInput({ match, currentResult, currentOverride, onSave, onRemove, 
     setOverrideAway(currentOverride?.away ?? match.away)
     setOverrideFeedback('')
   }, [currentOverride?.home, currentOverride?.away, match.home, match.away])
+
+  useEffect(() => {
+    setScheduledDate(isoToDateTimeLocalValue(currentSchedule?.date ?? match.date))
+    setScheduleFeedback('')
+  }, [currentSchedule?.date, match.date])
 
   const handleSave = () => {
     if (home === '' || away === '') return
@@ -44,31 +123,37 @@ function ResultInput({ match, currentResult, currentOverride, onSave, onRemove, 
     setOverrideFeedback('Ajuste manual removido.')
   }
 
+  const handleSaveSchedule = async () => {
+    try {
+      await onSaveSchedule(match.id, dateTimeLocalValueToIso(scheduledDate))
+      setScheduleFeedback('Data do jogo salva.')
+    } catch (error) {
+      setScheduleFeedback(error?.message ?? 'Nao foi possivel salvar a data.')
+    }
+  }
+
+  const handleClearSchedule = async () => {
+    await onClearSchedule(match.id)
+    setScheduleFeedback('Data personalizada removida.')
+  }
+
   return (
     <div className={`result-row ${currentResult ? 'has-result' : ''}`}>
       <div className="result-match-info">
         <span className="match-id-badge">{match.id}</span>
-        <span className="teams-label">{match.home} × {match.away}</span>
-        <span className="venue-label">{match.venue}</span>
+        <div className="admin-match-summary">
+          <span className="teams-label">{match.home} × {match.away}</span>
+          <span className="venue-label">{match.venue}</span>
+          <span className="schedule-label">
+            {formatAdminMatchDate(match.date)} BRT
+            {currentSchedule && <span className="override-badge">Data alterada</span>}
+          </span>
+        </div>
       </div>
       <div className="result-inputs">
-        <input
-          type="number"
-          className="score-input"
-          min="0" max="99"
-          value={home}
-          onChange={e => setHome(e.target.value.replace(/\D/g,'').slice(0,2) === '' ? '' : Number(e.target.value.replace(/\D/g,'').slice(0,2)))}
-          placeholder="0"
-        />
+        <ScoreInput value={home} onChange={setHome} />
         <span>×</span>
-        <input
-          type="number"
-          className="score-input"
-          min="0" max="99"
-          value={away}
-          onChange={e => setAway(e.target.value.replace(/\D/g,'').slice(0,2) === '' ? '' : Number(e.target.value.replace(/\D/g,'').slice(0,2)))}
-          placeholder="0"
-        />
+        <ScoreInput value={away} onChange={setAway} />
         <button
           className="btn btn-sm btn-primary"
           onClick={handleSave}
@@ -101,6 +186,44 @@ function ResultInput({ match, currentResult, currentOverride, onSave, onRemove, 
           </button>
         </div>
       )}
+      <div className="override-card">
+        <div className="override-card-header">
+          <span className="control-label">Agendamento do jogo</span>
+          <span className="override-badge">Horario de Brasilia</span>
+        </div>
+        <div className="schedule-editor">
+          <input
+            type="datetime-local"
+            className="input-field"
+            value={scheduledDate}
+            onChange={event => {
+              setScheduledDate(event.target.value)
+              setScheduleFeedback('')
+            }}
+          />
+          <div className="override-actions">
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              onClick={handleSaveSchedule}
+              disabled={!scheduledDate}
+            >
+              <Save size={13} />
+              Salvar data
+            </button>
+            {currentSchedule && (
+              <button type="button" className="btn btn-sm btn-ghost danger" onClick={handleClearSchedule}>
+                <Trash2 size={13} />
+                Voltar ao padrao
+              </button>
+            )}
+          </div>
+        </div>
+        <span className="schedule-help">
+          Se precisar corrigir um horario sem deploy, ajuste aqui. A trava dos palpites acompanha essa data.
+        </span>
+        {scheduleFeedback && <span className="override-feedback">{scheduleFeedback}</span>}
+      </div>
       {isKnockout && (
         <div className="override-card">
           <div className="override-card-header">
@@ -150,8 +273,102 @@ function ResultInput({ match, currentResult, currentOverride, onSave, onRemove, 
   )
 }
 
-export function Admin({ currentUser, canManageResults, adminReady, matches, matchOverrides, results, setResult, removeResult, saveMatchOverride, clearMatchOverride }) {
+function formatReviewDate(dateString) {
+  if (!dateString) return 'Sem revisão'
+  return new Date(dateString).toLocaleString('pt-BR')
+}
+
+function AccessRequestCard({ request, pendingAction, onApprove, onReject, onDelete }) {
+  const isPending = request.status === 'pending'
+  const isApproved = request.status === 'approved'
+  const isRejected = request.status === 'rejected'
+
+  return (
+    <div className={`access-request-card status-${request.status}`}>
+      <div className="access-request-main">
+        <strong>{request.name}</strong>
+        <span>{request.email}</span>
+      </div>
+
+      <div className="access-request-meta">
+        <span>Solicitado em {formatReviewDate(request.requestedAt)}</span>
+        {request.reviewedAt && (
+          <span>Revisado em {formatReviewDate(request.reviewedAt)}</span>
+        )}
+      </div>
+
+      <div className="access-request-actions">
+        {!isApproved && (
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={() => onApprove(request.id)}
+            disabled={pendingAction === request.id}
+          >
+            Aprovar
+          </button>
+        )}
+
+        {!isPending && (
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost danger"
+            onClick={() => onReject(request.id)}
+            disabled={pendingAction === request.id}
+          >
+            Rejeitar
+          </button>
+        )}
+
+        {isPending && (
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost danger"
+            onClick={() => onReject(request.id)}
+            disabled={pendingAction === request.id}
+          >
+            Rejeitar
+          </button>
+        )}
+
+        {isRejected && (
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost danger"
+            onClick={() => onDelete(request.id)}
+            disabled={pendingAction === request.id}
+          >
+            <Trash2 size={13} />
+            Excluir
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function Admin({
+  currentUser,
+  canManageResults,
+  adminReady,
+  accessRequests,
+  reviewAccessRequest,
+  deleteRejectedAccessRequest,
+  matches,
+  matchOverrides,
+  matchSchedule,
+  results,
+  setResult,
+  removeResult,
+  saveMatchOverride,
+  clearMatchOverride,
+  saveMatchSchedule,
+  clearMatchSchedule,
+}) {
   const [phaseFilter, setPhaseFilter] = useState('group')
+  const [pendingAction, setPendingAction] = useState('')
+  const [reviewFeedback, setReviewFeedback] = useState('')
+  const [requestsExpanded, setRequestsExpanded] = useState(false)
 
   const resultMap = useMemo(
     () => Object.fromEntries(results.map(r => [r.matchId, r])),
@@ -159,6 +376,37 @@ export function Admin({ currentUser, canManageResults, adminReady, matches, matc
   )
 
   const filteredMatches = matches.filter(m => m.phase === phaseFilter)
+  const pendingRequests = accessRequests.filter(request => request.status === 'pending')
+  const approvedRequests = accessRequests.filter(request => request.status === 'approved')
+  const rejectedRequests = accessRequests.filter(request => request.status === 'rejected')
+
+  useEffect(() => {
+    if (pendingRequests.length > 0) {
+      setRequestsExpanded(true)
+    }
+  }, [pendingRequests.length])
+
+  const handleReview = async (requestId, status) => {
+    setPendingAction(requestId)
+    const result = await reviewAccessRequest(requestId, status)
+    setPendingAction('')
+    setReviewFeedback(
+      result?.ok
+        ? (status === 'approved' ? 'Cadastro aprovado.' : 'Cadastro movido para rejeitados.')
+        : (result?.error ?? 'Não foi possível revisar o cadastro.')
+    )
+  }
+
+  const handleDeleteRejected = async (requestId) => {
+    setPendingAction(requestId)
+    const result = await deleteRejectedAccessRequest(requestId)
+    setPendingAction('')
+    setReviewFeedback(
+      result?.ok
+        ? 'Cadastro rejeitado excluído do banco do bolão.'
+        : (result?.error ?? 'Não foi possível excluir o cadastro.')
+    )
+  }
 
   if (!adminReady) {
     return (
@@ -188,8 +436,108 @@ export function Admin({ currentUser, canManageResults, adminReady, matches, matc
     <div className="admin-panel">
       <div className="admin-header">
         <Shield size={20} />
-        <h2 className="section-title">Painel de Resultados</h2>
+        <h2 className="section-title">Painel Admin</h2>
         <span className="admin-badge">Conta autorizada</span>
+      </div>
+
+      <div className="admin-request-section">
+        <button
+          type="button"
+          className={`admin-request-toggle ${requestsExpanded ? 'expanded' : ''}`}
+          onClick={() => setRequestsExpanded(current => !current)}
+        >
+          <div className="admin-request-toggle-main">
+            <span className="admin-request-toggle-title">Cadastros para revisão</span>
+            <span className="admin-request-toggle-subtitle">
+              Pendentes ficam na fila principal. Rejeitados aparecem separados e podem ser aprovados depois.
+            </span>
+          </div>
+          <div className="admin-request-toggle-side">
+            {pendingRequests.length > 0 && (
+              <span className="admin-request-notification">
+                {pendingRequests.length}
+              </span>
+            )}
+            <span className="admin-request-pill">
+              {pendingRequests.length} pendente{pendingRequests.length !== 1 ? 's' : ''}
+            </span>
+            {requestsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </div>
+        </button>
+
+        {requestsExpanded && (
+          <>
+            {reviewFeedback && <p className="override-feedback">{reviewFeedback}</p>}
+
+            <div className="admin-request-groups">
+              <div className="admin-request-group">
+                <div className="admin-request-group-header">
+                  <strong>Pendentes</strong>
+                  <span>{pendingRequests.length}</span>
+                </div>
+
+                {pendingRequests.length === 0 ? (
+                  <p className="empty-text">Nenhum cadastro pendente no momento.</p>
+                ) : (
+                  pendingRequests.map(request => (
+                    <AccessRequestCard
+                      key={request.id}
+                      request={request}
+                      pendingAction={pendingAction}
+                      onApprove={requestId => handleReview(requestId, 'approved')}
+                      onReject={requestId => handleReview(requestId, 'rejected')}
+                      onDelete={handleDeleteRejected}
+                    />
+                  ))
+                )}
+              </div>
+
+              <div className="admin-request-group">
+                <div className="admin-request-group-header">
+                  <strong>Aprovados</strong>
+                  <span>{approvedRequests.length}</span>
+                </div>
+
+                {approvedRequests.length === 0 ? (
+                  <p className="empty-text">Nenhum cadastro aprovado ainda.</p>
+                ) : (
+                  approvedRequests.map(request => (
+                    <AccessRequestCard
+                      key={request.id}
+                      request={request}
+                      pendingAction={pendingAction}
+                      onApprove={requestId => handleReview(requestId, 'approved')}
+                      onReject={requestId => handleReview(requestId, 'rejected')}
+                      onDelete={handleDeleteRejected}
+                    />
+                  ))
+                )}
+              </div>
+
+              <div className="admin-request-group">
+                <div className="admin-request-group-header">
+                  <strong>Rejeitados</strong>
+                  <span>{rejectedRequests.length}</span>
+                </div>
+
+                {rejectedRequests.length === 0 ? (
+                  <p className="empty-text">Nenhum cadastro rejeitado.</p>
+                ) : (
+                  rejectedRequests.map(request => (
+                    <AccessRequestCard
+                      key={request.id}
+                      request={request}
+                      pendingAction={pendingAction}
+                      onApprove={requestId => handleReview(requestId, 'approved')}
+                      onReject={requestId => handleReview(requestId, 'rejected')}
+                      onDelete={handleDeleteRejected}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="phase-tabs">
@@ -215,10 +563,13 @@ export function Admin({ currentUser, canManageResults, adminReady, matches, matc
               match={match}
               currentResult={resultMap[match.id] ?? null}
               currentOverride={matchOverrides?.[match.id] ?? null}
+              currentSchedule={matchSchedule?.[match.id] ?? null}
               onSave={setResult}
               onRemove={removeResult}
               onSaveOverride={saveMatchOverride}
               onClearOverride={clearMatchOverride}
+              onSaveSchedule={saveMatchSchedule}
+              onClearSchedule={clearMatchSchedule}
             />
           ))
         )}

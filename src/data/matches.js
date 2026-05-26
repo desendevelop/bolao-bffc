@@ -1,7 +1,7 @@
 /**
  * matches.js — Lista completa de jogos da Copa do Mundo FIFA 2026
  * Horários em BRT (Brasília, UTC-3)
- * Fonte: FIFA.com / Trivela.com.br (atualizado em 25/05/2026)
+ * Fonte: FIFA.com + comites-sede oficiais (verificado em 26/05/2026)
  *
  * Fases:
  *   "group"    — Fase de Grupos (multiplicador 1x)
@@ -24,14 +24,14 @@ export const PHASE_CONFIG = {
 }
 
 // dateTime está em ISO 8601 no fuso America/Sao_Paulo (BRT = UTC-3)
-// deadline do palpite = dateTime - 2 horas
+// deadline do palpite = dateTime - 10 minutos
 export const MATCHES = [
   // ─── FASE DE GRUPOS — 1ª RODADA ───────────────────────────────────────────
-  { id: 'G01', phase: 'group', group: 'A', date: '2026-06-11T12:10:00-03:00', home: 'México',          away: 'África do Sul',  venue: 'Cidade do México' },
+  { id: 'G01', phase: 'group', group: 'A', date: '2026-06-11T16:00:00-03:00', home: 'México',          away: 'África do Sul',  venue: 'Cidade do México' },
   { id: 'G02', phase: 'group', group: 'A', date: '2026-06-11T23:00:00-03:00', home: 'Coreia do Sul',   away: 'República Tcheca', venue: 'Guadalajara' },
   { id: 'G03', phase: 'group', group: 'B', date: '2026-06-12T16:00:00-03:00', home: 'Canadá',          away: 'Bósnia-Herzegovina', venue: 'Toronto' },
   { id: 'G04', phase: 'group', group: 'D', date: '2026-06-12T22:00:00-03:00', home: 'Estados Unidos',  away: 'Paraguai',       venue: 'Los Angeles' },
-  { id: 'G05', phase: 'group', group: 'D', date: '2026-06-13T01:00:00-03:00', home: 'Austrália',       away: 'Turquia',        venue: 'Vancouver' },
+  { id: 'G05', phase: 'group', group: 'D', date: '2026-06-14T01:00:00-03:00', home: 'Austrália',       away: 'Turquia',        venue: 'Vancouver' },
   { id: 'G06', phase: 'group', group: 'B', date: '2026-06-13T16:00:00-03:00', home: 'Catar',           away: 'Suíça',          venue: 'San Francisco' },
   { id: 'G07', phase: 'group', group: 'C', date: '2026-06-13T19:00:00-03:00', home: 'Brasil',          away: 'Marrocos',       venue: 'Nova York/NJ' },
   { id: 'G08', phase: 'group', group: 'C', date: '2026-06-13T22:00:00-03:00', home: 'Haiti',           away: 'Escócia',        venue: 'Boston' },
@@ -43,7 +43,7 @@ export const MATCHES = [
   { id: 'G14', phase: 'group', group: 'G', date: '2026-06-15T16:00:00-03:00', home: 'Bélgica',         away: 'Egito',          venue: 'Seattle' },
   { id: 'G15', phase: 'group', group: 'H', date: '2026-06-15T19:00:00-03:00', home: 'Arábia Saudita',  away: 'Uruguai',        venue: 'Miami' },
   { id: 'G16', phase: 'group', group: 'G', date: '2026-06-15T22:00:00-03:00', home: 'Irã',             away: 'Nova Zelândia',  venue: 'Los Angeles' },
-  { id: 'G17', phase: 'group', group: 'J', date: '2026-06-16T01:00:00-03:00', home: 'Áustria',         away: 'Jordânia',       venue: 'San Francisco' },
+  { id: 'G17', phase: 'group', group: 'J', date: '2026-06-17T01:00:00-03:00', home: 'Áustria',         away: 'Jordânia',       venue: 'San Francisco' },
   { id: 'G18', phase: 'group', group: 'I', date: '2026-06-16T16:00:00-03:00', home: 'França',          away: 'Senegal',        venue: 'Nova York/NJ' },
   { id: 'G19', phase: 'group', group: 'I', date: '2026-06-16T19:00:00-03:00', home: 'Iraque',          away: 'Noruega',        venue: 'Boston' },
   { id: 'G20', phase: 'group', group: 'J', date: '2026-06-16T22:00:00-03:00', home: 'Argentina',       away: 'Argélia',        venue: 'Kansas City' },
@@ -57,11 +57,11 @@ export const MATCHES = [
   { id: 'G26', phase: 'group', group: 'B', date: '2026-06-18T16:00:00-03:00', home: 'Suíça',            away: 'Bósnia-Herzegovina', venue: 'Los Angeles' },
   { id: 'G27', phase: 'group', group: 'B', date: '2026-06-18T19:00:00-03:00', home: 'Canadá',           away: 'Catar',          venue: 'Vancouver' },
   { id: 'G28', phase: 'group', group: 'A', date: '2026-06-18T22:00:00-03:00', home: 'México',           away: 'Coreia do Sul',  venue: 'Guadalajara' },
-  { id: 'G29', phase: 'group', group: 'D', date: '2026-06-19T01:00:00-03:00', home: 'Turquia',          away: 'Paraguai',       venue: 'San Francisco' },
+  { id: 'G29', phase: 'group', group: 'D', date: '2026-06-20T01:00:00-03:00', home: 'Turquia',          away: 'Paraguai',       venue: 'San Francisco' },
   { id: 'G30', phase: 'group', group: 'D', date: '2026-06-19T16:00:00-03:00', home: 'Estados Unidos',   away: 'Austrália',      venue: 'Seattle' },
   { id: 'G31', phase: 'group', group: 'C', date: '2026-06-19T19:00:00-03:00', home: 'Escócia',          away: 'Marrocos',       venue: 'Boston' },
   { id: 'G32', phase: 'group', group: 'C', date: '2026-06-19T21:30:00-03:00', home: 'Brasil',           away: 'Haiti',          venue: 'Philadelphia' },
-  { id: 'G33', phase: 'group', group: 'F', date: '2026-06-20T01:00:00-03:00', home: 'Tunísia',          away: 'Japão',          venue: 'Monterrey' },
+  { id: 'G33', phase: 'group', group: 'F', date: '2026-06-21T01:00:00-03:00', home: 'Tunísia',          away: 'Japão',          venue: 'Monterrey' },
   { id: 'G34', phase: 'group', group: 'F', date: '2026-06-20T14:00:00-03:00', home: 'Países Baixos',    away: 'Suécia',         venue: 'Houston' },
   { id: 'G35', phase: 'group', group: 'E', date: '2026-06-20T17:00:00-03:00', home: 'Alemanha',         away: 'Costa do Marfim', venue: 'Toronto' },
   { id: 'G36', phase: 'group', group: 'E', date: '2026-06-20T21:00:00-03:00', home: 'Equador',          away: 'Curaçao',        venue: 'Kansas City' },
@@ -69,7 +69,7 @@ export const MATCHES = [
   { id: 'G38', phase: 'group', group: 'G', date: '2026-06-21T16:00:00-03:00', home: 'Bélgica',          away: 'Irã',            venue: 'Los Angeles' },
   { id: 'G39', phase: 'group', group: 'H', date: '2026-06-21T19:00:00-03:00', home: 'Uruguai',          away: 'Cabo Verde',     venue: 'Miami' },
   { id: 'G40', phase: 'group', group: 'G', date: '2026-06-21T22:00:00-03:00', home: 'Nova Zelândia',    away: 'Egito',          venue: 'Vancouver' },
-  { id: 'G41', phase: 'group', group: 'J', date: '2026-06-22T00:00:00-03:00', home: 'Jordânia',         away: 'Argélia',        venue: 'San Francisco' },
+  { id: 'G41', phase: 'group', group: 'J', date: '2026-06-23T00:00:00-03:00', home: 'Jordânia',         away: 'Argélia',        venue: 'San Francisco' },
   { id: 'G42', phase: 'group', group: 'J', date: '2026-06-22T14:00:00-03:00', home: 'Argentina',        away: 'Áustria',        venue: 'Dallas' },
   { id: 'G43', phase: 'group', group: 'I', date: '2026-06-22T18:00:00-03:00', home: 'França',           away: 'Iraque',         venue: 'Philadelphia' },
   { id: 'G44', phase: 'group', group: 'I', date: '2026-06-22T21:00:00-03:00', home: 'Noruega',          away: 'Senegal',        venue: 'Nova York/NJ' },
@@ -115,11 +115,11 @@ export const MATCHES = [
   { id: 'R08', phase: 'r32',   group: null, date: '2026-07-01T13:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Atlanta' },
   { id: 'R09', phase: 'r32',   group: null, date: '2026-07-01T17:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Seattle' },
   { id: 'R10', phase: 'r32',   group: null, date: '2026-07-01T21:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'San Francisco' },
-  { id: 'R11', phase: 'r32',   group: null, date: '2026-07-02T00:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Vancouver' },
+  { id: 'R11', phase: 'r32',   group: null, date: '2026-07-03T00:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Vancouver' },
   { id: 'R12', phase: 'r32',   group: null, date: '2026-07-02T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Los Angeles' },
   { id: 'R13', phase: 'r32',   group: null, date: '2026-07-02T20:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Toronto' },
   { id: 'R14', phase: 'r32',   group: null, date: '2026-07-03T15:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Dallas' },
-  { id: 'R15', phase: 'r32',   group: null, date: '2026-07-03T17:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Atlanta' },
+  { id: 'R15', phase: 'r32',   group: null, date: '2026-07-03T19:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Miami' },
   { id: 'R16', phase: 'r32',   group: null, date: '2026-07-03T22:30:00-03:00', home: 'A definir', away: 'A definir', venue: 'Kansas City' },
 
   // ─── OITAVAS DE FINAL ─────────────────────────────────────────────────────
@@ -127,8 +127,8 @@ export const MATCHES = [
   { id: 'O02', phase: 'r16',   group: null, date: '2026-07-04T18:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Philadelphia' },
   { id: 'O03', phase: 'r16',   group: null, date: '2026-07-05T17:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Nova York/NJ' },
   { id: 'O04', phase: 'r16',   group: null, date: '2026-07-05T21:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Cidade do México' },
-  { id: 'O05', phase: 'r16',   group: null, date: '2026-07-06T15:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Dallas' },
-  { id: 'O06', phase: 'r16',   group: null, date: '2026-07-06T20:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Seattle' },
+  { id: 'O05', phase: 'r16',   group: null, date: '2026-07-06T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Dallas' },
+  { id: 'O06', phase: 'r16',   group: null, date: '2026-07-06T21:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Seattle' },
   { id: 'O07', phase: 'r16',   group: null, date: '2026-07-07T13:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Atlanta' },
   { id: 'O08', phase: 'r16',   group: null, date: '2026-07-07T17:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Vancouver' },
 
@@ -136,11 +136,11 @@ export const MATCHES = [
   { id: 'Q01', phase: 'qf',    group: null, date: '2026-07-09T17:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Boston' },
   { id: 'Q02', phase: 'qf',    group: null, date: '2026-07-10T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Los Angeles' },
   { id: 'Q03', phase: 'qf',    group: null, date: '2026-07-11T18:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Miami' },
-  { id: 'Q04', phase: 'qf',    group: null, date: '2026-07-11T21:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Kansas City' },
+  { id: 'Q04', phase: 'qf',    group: null, date: '2026-07-11T22:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Kansas City' },
 
   // ─── SEMIFINAIS ───────────────────────────────────────────────────────────
   { id: 'S01', phase: 'sf',    group: null, date: '2026-07-14T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Dallas' },
-  { id: 'S02', phase: 'sf',    group: null, date: '2026-07-15T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Dallas' },
+  { id: 'S02', phase: 'sf',    group: null, date: '2026-07-15T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Atlanta' },
 
   // ─── DISPUTA PELO 3º LUGAR ────────────────────────────────────────────────
   { id: 'T01', phase: 'third', group: null, date: '2026-07-18T18:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Miami' },
@@ -149,12 +149,24 @@ export const MATCHES = [
   { id: 'F01', phase: 'final', group: null, date: '2026-07-19T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Nova York/NJ — MetLife Stadium' },
 ]
 
+export function applyMatchSchedule(baseMatches, matchSchedule = {}) {
+  return baseMatches.map(match => {
+    const scheduled = matchSchedule?.[match.id]
+    if (!scheduled?.date || Number.isNaN(new Date(scheduled.date).getTime())) return match
+
+    return {
+      ...match,
+      date: scheduled.date,
+    }
+  })
+}
+
 /**
- * Retorna o deadline de palpite: 2 horas antes do início da partida
+ * Retorna o deadline de palpite: 10 minutos antes do início da partida
  */
 export function getBetDeadline(matchDate) {
   const d = new Date(matchDate)
-  d.setHours(d.getHours() - 2)
+  d.setMinutes(d.getMinutes() - 10)
   return d
 }
 

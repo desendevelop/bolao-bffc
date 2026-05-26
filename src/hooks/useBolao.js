@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { onValue, ref, remove, set } from 'firebase/database'
 import { db, firebaseInitError, isFirebaseConfigured } from '../services/firebase.js'
 import { useBolaoLocal } from './useBolaoLocal.js'
+import { MATCHES, applyMatchSchedule, getBetDeadline, isBettingOpen } from '../data/matches.js'
 import { resolveTournamentMatches } from '../utils/tournament.js'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -28,6 +29,22 @@ function normalizeMap(obj) {
   return obj ?? {}
 }
 
+function validateScheduleDate(date) {
+  if (!date || Number.isNaN(new Date(date).getTime())) {
+    throw new Error('Informe uma data/hora valida para o jogo.')
+  }
+}
+
+function upsertByMatchId(items, nextItem) {
+  const existingIndex = items.findIndex(item => item.matchId === nextItem.matchId)
+
+  if (existingIndex === -1) {
+    return [...items, nextItem]
+  }
+
+  return items.map(item => item.matchId === nextItem.matchId ? nextItem : item)
+}
+
 function formatWriteError(error) {
   if (error?.code === 'PERMISSION_DENIED') {
     return 'Já era, você DANILOU'
@@ -36,27 +53,34 @@ function formatWriteError(error) {
   return error?.message ?? 'Não foi possível salvar no Firebase.'
 }
 
-function useBolaoFirebase(currentUser, authReady) {
+function useBolaoFirebase(currentUser, authReady, canAccessBolao) {
   const [players, setPlayers] = useState([])
   const [bets, setBets] = useState({})
   const [results, setResults] = useState([])
   const [matchOverrides, setMatchOverrides] = useState({})
+  const [matchSchedule, setMatchSchedule] = useState({})
   const [loading, setLoading] = useState(!firebaseInitError)
   const [error, setError] = useState(firebaseInitError?.message ?? null)
-  const listenersRef = useRef([])
+  const dataListenersRef = useRef([])
+  const betListenersRef = useRef([])
+  const [betRefreshTick, setBetRefreshTick] = useState(0)
   const currentUid = currentUser?.uid ?? null
+  const scheduledMatches = useMemo(
+    () => applyMatchSchedule(MATCHES, matchSchedule),
+    [matchSchedule]
+  )
   const currentPlayer = useMemo(
     () => players.find(player => player.id === currentUid) ?? null,
     [players, currentUid]
   )
   const matches = useMemo(
-    () => resolveTournamentMatches(results, matchOverrides),
-    [results, matchOverrides]
+    () => resolveTournamentMatches(results, matchOverrides, scheduledMatches),
+    [results, matchOverrides, scheduledMatches]
   )
 
   useEffect(() => {
-    listenersRef.current.forEach(unsubscribe => unsubscribe())
-    listenersRef.current = []
+    dataListenersRef.current.forEach(unsubscribe => unsubscribe())
+    dataListenersRef.current = []
 
     if (firebaseInitError || !db || !authReady) {
       setLoading(!authReady)
@@ -66,11 +90,12 @@ function useBolaoFirebase(currentUser, authReady) {
       return
     }
 
-    if (!currentUid) {
+    if (!currentUid || !canAccessBolao) {
       setPlayers([])
       setBets({})
       setResults([])
       setMatchOverrides({})
+      setMatchSchedule({})
       setError(null)
       setLoading(false)
       return
@@ -90,19 +115,6 @@ function useBolaoFirebase(currentUser, authReady) {
       setLoading(false)
     }))
 
-    const betsRef = ref(db, 'bets')
-    listeners.push(onValue(betsRef, snap => {
-      const raw = snap.val() ?? {}
-      const normalized = {}
-      for (const [playerId, playerBets] of Object.entries(raw)) {
-        normalized[playerId] = betsObjToArray(playerBets)
-      }
-      setBets(normalized)
-    }, err => {
-      console.error('[Firebase] bets:', err)
-      setError(err.message)
-    }))
-
     const resultsRef = ref(db, 'results')
     listeners.push(onValue(resultsRef, snap => {
       setResults(resultsObjToArray(snap.val()))
@@ -119,9 +131,101 @@ function useBolaoFirebase(currentUser, authReady) {
       setError(err.message)
     }))
 
-    listenersRef.current = listeners
+    const scheduleRef = ref(db, 'matchSchedule')
+    listeners.push(onValue(scheduleRef, snap => {
+      setMatchSchedule(normalizeMap(snap.val()))
+    }, err => {
+      console.error('[Firebase] matchSchedule:', err)
+      setError(err.message)
+    }))
+
+    dataListenersRef.current = listeners
     return () => listeners.forEach(unsubscribe => unsubscribe())
+  }, [authReady, canAccessBolao, currentUid])
+
+  useEffect(() => {
+    if (!authReady || !currentUid) return undefined
+
+    const intervalId = window.setInterval(() => {
+      setBetRefreshTick(Date.now())
+    }, 30000)
+
+    return () => window.clearInterval(intervalId)
   }, [authReady, currentUid])
+
+  useEffect(() => {
+    betListenersRef.current.forEach(unsubscribe => unsubscribe())
+    betListenersRef.current = []
+
+    if (firebaseInitError || !db || !authReady) {
+      return
+    }
+
+    if (!currentUid || !canAccessBolao) {
+      setBets({})
+      return
+    }
+
+    const revealedMatchIds = matches
+      .filter(match => !isBettingOpen(match.date))
+      .map(match => match.id)
+    const revealedMatchIdSet = new Set(revealedMatchIds)
+
+    setBets(current => {
+      const next = {
+        [currentUid]: current[currentUid] ?? [],
+      }
+
+      for (const [playerId, playerBets] of Object.entries(current)) {
+        if (playerId === currentUid) continue
+        const filtered = (playerBets ?? []).filter(bet => revealedMatchIdSet.has(bet.matchId))
+        if (filtered.length > 0) {
+          next[playerId] = filtered
+        }
+      }
+
+      return next
+    })
+
+    const listeners = []
+
+    const ownBetsRef = ref(db, `bets/${currentUid}`)
+    listeners.push(onValue(ownBetsRef, snap => {
+      setBets(current => ({
+        ...current,
+        [currentUid]: betsObjToArray(snap.val()),
+      }))
+    }, err => {
+      console.error('[Firebase] own bets:', err)
+      setError(err.message)
+    }))
+
+    for (const player of players) {
+      if (player.id === currentUid) continue
+
+      for (const matchId of revealedMatchIds) {
+        const publicBetRef = ref(db, `bets/${player.id}/${matchId}`)
+
+        listeners.push(onValue(publicBetRef, snap => {
+          setBets(current => {
+            const nextPlayerBets = snap.exists()
+              ? upsertByMatchId(current[player.id] ?? [], { matchId, ...snap.val() })
+              : (current[player.id] ?? []).filter(bet => bet.matchId !== matchId)
+
+            return {
+              ...current,
+              [player.id]: nextPlayerBets,
+            }
+          })
+        }, err => {
+          console.warn(`[Firebase] public bet ${player.id}/${matchId}:`, err)
+        }))
+      }
+    }
+
+    betListenersRef.current = listeners
+    return () => listeners.forEach(unsubscribe => unsubscribe())
+  }, [authReady, canAccessBolao, currentUid, matches, players, betRefreshTick])
 
   const saveOwnProfile = useCallback(async (name) => {
     if (!currentUid || !currentUser) {
@@ -163,10 +267,29 @@ function useBolaoFirebase(currentUser, authReady) {
     }
   }, [currentUid])
 
+  const removeBet = useCallback(async (matchId) => {
+    if (!currentUid) {
+      throw new Error('Faça login para apagar palpites.')
+    }
+
+    try {
+      await remove(ref(db, `bets/${currentUid}/${matchId}`))
+    } catch (error) {
+      throw new Error(formatWriteError(error))
+    }
+  }, [currentUid])
+
   const getOwnBet = useCallback((matchId) => {
     if (!currentUid) return null
     return (bets[currentUid] ?? []).find(bet => bet.matchId === matchId) ?? null
   }, [bets, currentUid])
+
+  const getVisibleBets = useCallback((matchId) => {
+    return players.map(player => ({
+      player,
+      bet: (bets[player.id] ?? []).find(item => item.matchId === matchId) ?? null,
+    }))
+  }, [bets, players])
 
   const setResult = useCallback(async (matchId, homeGoals, awayGoals, winnerSide = null) => {
     const payload = {
@@ -205,6 +328,20 @@ function useBolaoFirebase(currentUser, authReady) {
     await remove(ref(db, `matchOverrides/${matchId}`))
   }, [])
 
+  const saveMatchSchedule = useCallback(async (matchId, date) => {
+    validateScheduleDate(date)
+
+    await set(ref(db, `matchSchedule/${matchId}`), {
+      date,
+      deadlineMs: getBetDeadline(date).getTime(),
+      updatedAt: new Date().toISOString(),
+    })
+  }, [])
+
+  const clearMatchSchedule = useCallback(async (matchId) => {
+    await remove(ref(db, `matchSchedule/${matchId}`))
+  }, [])
+
   const getResult = useCallback((matchId) => {
     return results.find(r => r.matchId === matchId) ?? null
   }, [results])
@@ -214,6 +351,7 @@ function useBolaoFirebase(currentUser, authReady) {
     bets,
     results,
     matchOverrides,
+    matchSchedule,
     matches,
     loading,
     error,
@@ -222,19 +360,23 @@ function useBolaoFirebase(currentUser, authReady) {
     currentPlayer,
     saveOwnProfile,
     placeBet,
+    removeBet,
     getOwnBet,
+    getVisibleBets,
     setResult,
     removeResult,
     saveMatchOverride,
     clearMatchOverride,
+    saveMatchSchedule,
+    clearMatchSchedule,
     getResult,
   }
 }
 
-export function useBolao(currentUser, authReady = true) {
+export function useBolao(currentUser, authReady = true, canAccessBolao = true) {
   if (!isFirebaseConfigured) {
     return useBolaoLocal(currentUser)
   }
 
-  return useBolaoFirebase(currentUser, authReady)
+  return useBolaoFirebase(currentUser, authReady, canAccessBolao)
 }

@@ -75,11 +75,26 @@ export function Rules() {
       </div>
 
       <div className="rules-block">
+        <h3>Desempate do ranking</h3>
+        <p>
+          Se dois ou mais participantes terminarem com a mesma pontuação total,
+          o desempate segue esta ordem: <strong>mais placares exatos</strong>,
+          depois <strong>mais jogos em que pontuou</strong>. Se ainda assim
+          continuar empatado, o ranking mostra <strong>empate real</strong>.
+        </p>
+      </div>
+
+      <div className="rules-block">
         <h3>⏰ Prazo para palpitar</h3>
         <p>
-          Palpites só são aceitos até <strong>2 horas antes do início</strong> de cada
+          Palpites só são aceitos até <strong>10 minutos antes do início</strong> de cada
           partida. Após esse prazo, o jogo fica bloqueado e quem não palpitou marca
           <strong> 0 pontos</strong>.
+        </p>
+        <p>
+          Depois que a trava de um jogo fecha, os palpites desse jogo ficam
+          <strong> visíveis para todos os participantes</strong> e continuam disponíveis
+          para consulta até o fim do bolão.
         </p>
       </div>
 

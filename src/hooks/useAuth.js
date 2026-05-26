@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   createUserWithEmailAndPassword,
   deleteUser,
@@ -8,7 +8,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from 'firebase/auth'
-import { get, onValue, ref, set } from 'firebase/database'
+import { get, onValue, ref, remove, set } from 'firebase/database'
 import { auth, db, firebaseInitError, isFirebaseConfigured } from '../services/firebase.js'
 
 const LOCAL_USER = {
@@ -45,12 +45,28 @@ function formatAuthError(error) {
   }
 }
 
+function objToArray(obj) {
+  if (!obj) return []
+  return Object.entries(obj).map(([id, value]) => ({ id, ...value }))
+}
+
 export function useAuth() {
   const [user, setUser] = useState(isFirebaseConfigured ? null : LOCAL_USER)
   const [authReady, setAuthReady] = useState(!isFirebaseConfigured)
   const [pending, setPending] = useState(false)
   const [isAdmin, setIsAdmin] = useState(!isFirebaseConfigured)
   const [adminReady, setAdminReady] = useState(!isFirebaseConfigured)
+  const [accessRequest, setAccessRequest] = useState(isFirebaseConfigured ? null : {
+    id: LOCAL_USER.uid,
+    name: LOCAL_USER.displayName,
+    email: LOCAL_USER.email,
+    status: 'approved',
+  })
+  const [accessStatus, setAccessStatus] = useState(isFirebaseConfigured ? null : 'approved')
+  const [accessReady, setAccessReady] = useState(!isFirebaseConfigured)
+  const [accessRequests, setAccessRequests] = useState([])
+  const [ownPlayerExists, setOwnPlayerExists] = useState(!isFirebaseConfigured)
+  const requestBootstrapRef = useRef(new Set())
 
   useEffect(() => {
     if (!isFirebaseConfigured || !auth || firebaseInitError) {
@@ -63,6 +79,11 @@ export function useAuth() {
       setAuthReady(true)
       setIsAdmin(false)
       setAdminReady(!nextUser)
+      setAccessRequest(null)
+      setAccessStatus(nextUser ? null : null)
+      setAccessReady(!nextUser)
+      setAccessRequests([])
+      setOwnPlayerExists(false)
     })
 
     return unsubscribe
@@ -85,6 +106,133 @@ export function useAuth() {
 
     return unsubscribe
   }, [user?.uid])
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !db || !user || user.uid === LOCAL_USER.uid) {
+      setAccessReady(true)
+      if (!isFirebaseConfigured) {
+        setAccessStatus('approved')
+      }
+      return
+    }
+
+    if (!adminReady) {
+      return
+    }
+
+    setAccessReady(false)
+    let requestLoaded = false
+    let playerLoaded = false
+    let requestValue = null
+    let playerExists = false
+
+    const maybeCreatePendingRequest = () => {
+      if (requestBootstrapRef.current.has(user.uid)) return
+      requestBootstrapRef.current.add(user.uid)
+
+      const fallbackName =
+        user.displayName?.trim() ||
+        user.email?.split('@')[0] ||
+        'Participante'
+
+      set(ref(db, `accessRequests/${user.uid}`), {
+        name: fallbackName,
+        email: user.email ?? '',
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+      }).catch(() => {})
+    }
+
+    const updateAccessState = () => {
+      if (!requestLoaded || !playerLoaded) return
+
+      const normalizedRequest = requestValue ? { id: user.uid, ...requestValue } : null
+      setAccessRequest(normalizedRequest)
+      setOwnPlayerExists(playerExists)
+
+      if (isAdmin || requestValue?.status === 'approved' || (!requestValue && playerExists)) {
+        setAccessStatus('approved')
+      } else if (requestValue?.status === 'rejected') {
+        setAccessStatus('rejected')
+      } else {
+        setAccessStatus('pending')
+        if (!requestValue) {
+          maybeCreatePendingRequest()
+        }
+      }
+
+      setAccessReady(true)
+    }
+
+    const requestRef = ref(db, `accessRequests/${user.uid}`)
+    const playerRef = ref(db, `players/${user.uid}`)
+
+    const unsubscribeRequest = onValue(requestRef, snap => {
+      requestValue = snap.val()
+      requestLoaded = true
+      updateAccessState()
+    }, () => {
+      requestValue = null
+      requestLoaded = true
+      updateAccessState()
+    })
+
+    const unsubscribePlayer = onValue(playerRef, snap => {
+      playerExists = snap.exists()
+      playerLoaded = true
+      updateAccessState()
+    }, () => {
+      playerExists = false
+      playerLoaded = true
+      updateAccessState()
+    })
+
+    return () => {
+      unsubscribeRequest()
+      unsubscribePlayer()
+    }
+  }, [adminReady, isAdmin, user?.uid])
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !db || !isAdmin) {
+      setAccessRequests([])
+      return
+    }
+
+    const accessRequestsRef = ref(db, 'accessRequests')
+    const unsubscribe = onValue(accessRequestsRef, snap => {
+      const next = objToArray(snap.val()).sort((left, right) => {
+        const statusOrder = { pending: 0, approved: 1, rejected: 2 }
+        return (
+          (statusOrder[left.status] ?? 99) - (statusOrder[right.status] ?? 99) ||
+          String(left.requestedAt ?? '').localeCompare(String(right.requestedAt ?? ''))
+        )
+      })
+
+      setAccessRequests(next)
+    }, () => {
+      setAccessRequests([])
+    })
+
+    return unsubscribe
+  }, [isAdmin])
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !db || !user || !accessReady) return
+    if (accessStatus !== 'approved' || ownPlayerExists) return
+
+    const name =
+      accessRequest?.name?.trim() ||
+      user.displayName?.trim() ||
+      user.email?.split('@')[0] ||
+      'Participante'
+
+    set(ref(db, `players/${user.uid}`), {
+      name,
+      email: user.email ?? accessRequest?.email ?? '',
+      createdAt: accessRequest?.requestedAt ?? new Date().toISOString(),
+    }).catch(() => {})
+  }, [accessReady, accessRequest?.email, accessRequest?.name, accessRequest?.requestedAt, accessStatus, ownPlayerExists, user?.displayName, user?.email, user?.uid])
 
   const signIn = useCallback(async ({ email, password }) => {
     if (!auth) {
@@ -115,28 +263,27 @@ export function useAuth() {
     }
 
     setPending(true)
+    let credentials = null
     try {
-      const credentials = await createUserWithEmailAndPassword(auth, normalizedEmail, password)
-      const playersSnap = await get(ref(db, 'players'))
-      const players = Object.entries(playersSnap.val() ?? {})
-      const duplicated = players.some(([uid, player]) =>
-        uid !== credentials.user.uid &&
-        player?.name?.toLowerCase() === trimmedName.toLowerCase()
-      )
-      if (duplicated) {
-        await deleteUser(credentials.user)
-        return { ok: false, error: 'Já existe um participante com esse nome.' }
-      }
+      credentials = await createUserWithEmailAndPassword(auth, normalizedEmail, password)
 
       await updateProfile(credentials.user, { displayName: trimmedName }).catch(() => {})
-      await set(ref(db, `players/${credentials.user.uid}`), {
+
+      await set(ref(db, `accessRequests/${credentials.user.uid}`), {
         name: trimmedName,
         email: normalizedEmail,
-        createdAt: new Date().toISOString(),
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
       })
 
-      return { ok: true }
+      return {
+        ok: true,
+        message: 'Conta criada. Aguarde a aprovação do administrador.',
+      }
     } catch (error) {
+      if (credentials?.user) {
+        await deleteUser(credentials.user).catch(() => {})
+      }
       return { ok: false, error: formatAuthError(error) }
     } finally {
       setPending(false)
@@ -172,15 +319,81 @@ export function useAuth() {
     }
   }, [])
 
+  const reviewAccessRequest = useCallback(async (requestId, status) => {
+    if (!db || !user || !isAdmin) {
+      return { ok: false, error: 'Apenas administradores podem revisar cadastros.' }
+    }
+
+    const normalizedStatus = status === 'approved' ? 'approved' : 'rejected'
+
+    try {
+      const currentSnap = await get(ref(db, `accessRequests/${requestId}`))
+      const currentValue = currentSnap.val()
+
+      if (!currentValue) {
+        return { ok: false, error: 'Solicitação não encontrada.' }
+      }
+
+      await set(ref(db, `accessRequests/${requestId}`), {
+        ...currentValue,
+        status: normalizedStatus,
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: user.uid,
+      })
+
+      if (normalizedStatus === 'rejected') {
+        await remove(ref(db, `players/${requestId}`)).catch(() => {})
+      }
+
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, error: error?.message ?? 'Não foi possível revisar o cadastro.' }
+    }
+  }, [isAdmin, user?.uid])
+
+  const deleteRejectedAccessRequest = useCallback(async (requestId) => {
+    if (!db || !user || !isAdmin) {
+      return { ok: false, error: 'Apenas administradores podem excluir cadastros.' }
+    }
+
+    try {
+      const currentSnap = await get(ref(db, `accessRequests/${requestId}`))
+      const currentValue = currentSnap.val()
+
+      if (!currentValue) {
+        return { ok: false, error: 'Cadastro não encontrado.' }
+      }
+
+      if (currentValue.status !== 'rejected') {
+        return { ok: false, error: 'Só é possível excluir cadastros rejeitados.' }
+      }
+
+      await remove(ref(db, `bets/${requestId}`)).catch(() => {})
+      await remove(ref(db, `players/${requestId}`)).catch(() => {})
+      await remove(ref(db, `accessRequests/${requestId}`))
+
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, error: error?.message ?? 'Não foi possível excluir o cadastro.' }
+    }
+  }, [isAdmin, user?.uid])
+
   return {
     user,
     authReady,
     pending,
     isAdmin,
     adminReady,
+    accessRequest,
+    accessRequests,
+    accessStatus,
+    accessReady,
+    canAccessBolao: !isFirebaseConfigured || isAdmin || accessStatus === 'approved',
     signIn,
     signUp,
     resetPassword,
     signOut,
+    reviewAccessRequest,
+    deleteRejectedAccessRequest,
   }
 }

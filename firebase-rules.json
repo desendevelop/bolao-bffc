@@ -1,9 +1,9 @@
 {
   "rules": {
     "players": {
-      ".read": "auth != null",
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists()))",
       "$playerId": {
-        ".write": "auth != null && auth.uid === $playerId",
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true || (auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId)",
         ".validate": "newData.hasChildren(['name', 'email', 'createdAt'])",
         "name": {
           ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 40"
@@ -19,11 +19,42 @@
         }
       }
     },
+    "accessRequests": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || (auth != null && root.child('admins').child(auth.uid).val() === true))",
+        ".write": "auth != null && ((auth != null && root.child('admins').child(auth.uid).val() === true) || (auth.uid === $uid && !data.exists() && newData.child('status').val() === 'pending'))",
+        ".validate": "newData.hasChildren(['name', 'email', 'status', 'requestedAt']) && newData.child('name').isString() && newData.child('name').val().length >= 2 && newData.child('name').val().length <= 40 && newData.child('email').isString() && newData.child('email').val().length >= 5 && newData.child('email').val().length <= 120 && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'approved' || newData.child('status').val() === 'rejected') && newData.child('requestedAt').isString() && (!newData.child('reviewedAt').exists() || newData.child('reviewedAt').isString()) && (!newData.child('reviewedBy').exists() || newData.child('reviewedBy').isString())",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 40"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().length >= 5 && newData.val().length <= 120"
+        },
+        "status": {
+          ".validate": "newData.val() === 'pending' || newData.val() === 'approved' || newData.val() === 'rejected'"
+        },
+        "requestedAt": {
+          ".validate": "newData.isString()"
+        },
+        "reviewedAt": {
+          ".validate": "newData.isString()"
+        },
+        "reviewedBy": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
     "bets": {
-      ".read": "auth != null",
       "$playerId": {
+        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+        ".read": "auth != null && auth.uid === $playerId",
         "G01": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781183400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G01').child('deadlineMs').exists() ? root.child('matchSchedule').child('G01').child('deadlineMs').val() : 1781203800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G01').child('deadlineMs').exists() ? root.child('matchSchedule').child('G01').child('deadlineMs').val() : 1781203800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -39,7 +70,8 @@
           }
         },
         "G02": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781222400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G02').child('deadlineMs').exists() ? root.child('matchSchedule').child('G02').child('deadlineMs').val() : 1781229000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G02').child('deadlineMs').exists() ? root.child('matchSchedule').child('G02').child('deadlineMs').val() : 1781229000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -55,7 +87,8 @@
           }
         },
         "G03": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781283600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G03').child('deadlineMs').exists() ? root.child('matchSchedule').child('G03').child('deadlineMs').val() : 1781290200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G03').child('deadlineMs').exists() ? root.child('matchSchedule').child('G03').child('deadlineMs').val() : 1781290200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -71,7 +104,8 @@
           }
         },
         "G04": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781305200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G04').child('deadlineMs').exists() ? root.child('matchSchedule').child('G04').child('deadlineMs').val() : 1781311800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G04').child('deadlineMs').exists() ? root.child('matchSchedule').child('G04').child('deadlineMs').val() : 1781311800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -87,7 +121,8 @@
           }
         },
         "G05": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781316000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G05').child('deadlineMs').exists() ? root.child('matchSchedule').child('G05').child('deadlineMs').val() : 1781409000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G05').child('deadlineMs').exists() ? root.child('matchSchedule').child('G05').child('deadlineMs').val() : 1781409000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -103,7 +138,8 @@
           }
         },
         "G06": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781370000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G06').child('deadlineMs').exists() ? root.child('matchSchedule').child('G06').child('deadlineMs').val() : 1781376600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G06').child('deadlineMs').exists() ? root.child('matchSchedule').child('G06').child('deadlineMs').val() : 1781376600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -119,7 +155,8 @@
           }
         },
         "G07": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781380800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G07').child('deadlineMs').exists() ? root.child('matchSchedule').child('G07').child('deadlineMs').val() : 1781387400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G07').child('deadlineMs').exists() ? root.child('matchSchedule').child('G07').child('deadlineMs').val() : 1781387400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -135,7 +172,8 @@
           }
         },
         "G08": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781391600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G08').child('deadlineMs').exists() ? root.child('matchSchedule').child('G08').child('deadlineMs').val() : 1781398200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G08').child('deadlineMs').exists() ? root.child('matchSchedule').child('G08').child('deadlineMs').val() : 1781398200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -151,7 +189,8 @@
           }
         },
         "G09": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781449200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G09').child('deadlineMs').exists() ? root.child('matchSchedule').child('G09').child('deadlineMs').val() : 1781455800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G09').child('deadlineMs').exists() ? root.child('matchSchedule').child('G09').child('deadlineMs').val() : 1781455800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -167,7 +206,8 @@
           }
         },
         "G10": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781460000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G10').child('deadlineMs').exists() ? root.child('matchSchedule').child('G10').child('deadlineMs').val() : 1781466600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G10').child('deadlineMs').exists() ? root.child('matchSchedule').child('G10').child('deadlineMs').val() : 1781466600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -183,7 +223,8 @@
           }
         },
         "G11": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781470800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G11').child('deadlineMs').exists() ? root.child('matchSchedule').child('G11').child('deadlineMs').val() : 1781477400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G11').child('deadlineMs').exists() ? root.child('matchSchedule').child('G11').child('deadlineMs').val() : 1781477400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -199,7 +240,8 @@
           }
         },
         "G12": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781481600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G12').child('deadlineMs').exists() ? root.child('matchSchedule').child('G12').child('deadlineMs').val() : 1781488200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G12').child('deadlineMs').exists() ? root.child('matchSchedule').child('G12').child('deadlineMs').val() : 1781488200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -215,7 +257,8 @@
           }
         },
         "G13": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781532000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G13').child('deadlineMs').exists() ? root.child('matchSchedule').child('G13').child('deadlineMs').val() : 1781538600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G13').child('deadlineMs').exists() ? root.child('matchSchedule').child('G13').child('deadlineMs').val() : 1781538600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -231,7 +274,8 @@
           }
         },
         "G14": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781542800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G14').child('deadlineMs').exists() ? root.child('matchSchedule').child('G14').child('deadlineMs').val() : 1781549400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G14').child('deadlineMs').exists() ? root.child('matchSchedule').child('G14').child('deadlineMs').val() : 1781549400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -247,7 +291,8 @@
           }
         },
         "G15": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781553600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G15').child('deadlineMs').exists() ? root.child('matchSchedule').child('G15').child('deadlineMs').val() : 1781560200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G15').child('deadlineMs').exists() ? root.child('matchSchedule').child('G15').child('deadlineMs').val() : 1781560200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -263,7 +308,8 @@
           }
         },
         "G16": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781564400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G16').child('deadlineMs').exists() ? root.child('matchSchedule').child('G16').child('deadlineMs').val() : 1781571000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G16').child('deadlineMs').exists() ? root.child('matchSchedule').child('G16').child('deadlineMs').val() : 1781571000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -279,7 +325,8 @@
           }
         },
         "G17": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781575200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G17').child('deadlineMs').exists() ? root.child('matchSchedule').child('G17').child('deadlineMs').val() : 1781668200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G17').child('deadlineMs').exists() ? root.child('matchSchedule').child('G17').child('deadlineMs').val() : 1781668200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -295,7 +342,8 @@
           }
         },
         "G18": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781629200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G18').child('deadlineMs').exists() ? root.child('matchSchedule').child('G18').child('deadlineMs').val() : 1781635800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G18').child('deadlineMs').exists() ? root.child('matchSchedule').child('G18').child('deadlineMs').val() : 1781635800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -311,7 +359,8 @@
           }
         },
         "G19": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781640000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G19').child('deadlineMs').exists() ? root.child('matchSchedule').child('G19').child('deadlineMs').val() : 1781646600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G19').child('deadlineMs').exists() ? root.child('matchSchedule').child('G19').child('deadlineMs').val() : 1781646600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -327,7 +376,8 @@
           }
         },
         "G20": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781650800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G20').child('deadlineMs').exists() ? root.child('matchSchedule').child('G20').child('deadlineMs').val() : 1781657400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G20').child('deadlineMs').exists() ? root.child('matchSchedule').child('G20').child('deadlineMs').val() : 1781657400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -343,7 +393,8 @@
           }
         },
         "G21": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781708400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G21').child('deadlineMs').exists() ? root.child('matchSchedule').child('G21').child('deadlineMs').val() : 1781715000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G21').child('deadlineMs').exists() ? root.child('matchSchedule').child('G21').child('deadlineMs').val() : 1781715000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -359,7 +410,8 @@
           }
         },
         "G22": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781719200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G22').child('deadlineMs').exists() ? root.child('matchSchedule').child('G22').child('deadlineMs').val() : 1781725800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G22').child('deadlineMs').exists() ? root.child('matchSchedule').child('G22').child('deadlineMs').val() : 1781725800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -375,7 +427,8 @@
           }
         },
         "G23": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781730000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G23').child('deadlineMs').exists() ? root.child('matchSchedule').child('G23').child('deadlineMs').val() : 1781736600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G23').child('deadlineMs').exists() ? root.child('matchSchedule').child('G23').child('deadlineMs').val() : 1781736600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -391,7 +444,8 @@
           }
         },
         "G24": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781740800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G24').child('deadlineMs').exists() ? root.child('matchSchedule').child('G24').child('deadlineMs').val() : 1781747400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G24').child('deadlineMs').exists() ? root.child('matchSchedule').child('G24').child('deadlineMs').val() : 1781747400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -407,7 +461,8 @@
           }
         },
         "G25": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781791200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G25').child('deadlineMs').exists() ? root.child('matchSchedule').child('G25').child('deadlineMs').val() : 1781797800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G25').child('deadlineMs').exists() ? root.child('matchSchedule').child('G25').child('deadlineMs').val() : 1781797800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -423,7 +478,8 @@
           }
         },
         "G26": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781802000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G26').child('deadlineMs').exists() ? root.child('matchSchedule').child('G26').child('deadlineMs').val() : 1781808600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G26').child('deadlineMs').exists() ? root.child('matchSchedule').child('G26').child('deadlineMs').val() : 1781808600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -439,7 +495,8 @@
           }
         },
         "G27": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781812800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G27').child('deadlineMs').exists() ? root.child('matchSchedule').child('G27').child('deadlineMs').val() : 1781819400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G27').child('deadlineMs').exists() ? root.child('matchSchedule').child('G27').child('deadlineMs').val() : 1781819400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -455,7 +512,8 @@
           }
         },
         "G28": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781823600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G28').child('deadlineMs').exists() ? root.child('matchSchedule').child('G28').child('deadlineMs').val() : 1781830200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G28').child('deadlineMs').exists() ? root.child('matchSchedule').child('G28').child('deadlineMs').val() : 1781830200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -471,7 +529,8 @@
           }
         },
         "G29": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781834400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G29').child('deadlineMs').exists() ? root.child('matchSchedule').child('G29').child('deadlineMs').val() : 1781927400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G29').child('deadlineMs').exists() ? root.child('matchSchedule').child('G29').child('deadlineMs').val() : 1781927400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -487,7 +546,8 @@
           }
         },
         "G30": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781888400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G30').child('deadlineMs').exists() ? root.child('matchSchedule').child('G30').child('deadlineMs').val() : 1781895000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G30').child('deadlineMs').exists() ? root.child('matchSchedule').child('G30').child('deadlineMs').val() : 1781895000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -503,7 +563,8 @@
           }
         },
         "G31": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781899200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G31').child('deadlineMs').exists() ? root.child('matchSchedule').child('G31').child('deadlineMs').val() : 1781905800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G31').child('deadlineMs').exists() ? root.child('matchSchedule').child('G31').child('deadlineMs').val() : 1781905800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -519,7 +580,8 @@
           }
         },
         "G32": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781908200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G32').child('deadlineMs').exists() ? root.child('matchSchedule').child('G32').child('deadlineMs').val() : 1781914800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G32').child('deadlineMs').exists() ? root.child('matchSchedule').child('G32').child('deadlineMs').val() : 1781914800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -535,7 +597,8 @@
           }
         },
         "G33": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781920800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G33').child('deadlineMs').exists() ? root.child('matchSchedule').child('G33').child('deadlineMs').val() : 1782013800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G33').child('deadlineMs').exists() ? root.child('matchSchedule').child('G33').child('deadlineMs').val() : 1782013800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -551,7 +614,8 @@
           }
         },
         "G34": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781967600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G34').child('deadlineMs').exists() ? root.child('matchSchedule').child('G34').child('deadlineMs').val() : 1781974200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G34').child('deadlineMs').exists() ? root.child('matchSchedule').child('G34').child('deadlineMs').val() : 1781974200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -567,7 +631,8 @@
           }
         },
         "G35": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781978400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G35').child('deadlineMs').exists() ? root.child('matchSchedule').child('G35').child('deadlineMs').val() : 1781985000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G35').child('deadlineMs').exists() ? root.child('matchSchedule').child('G35').child('deadlineMs').val() : 1781985000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -583,7 +648,8 @@
           }
         },
         "G36": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1781992800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G36').child('deadlineMs').exists() ? root.child('matchSchedule').child('G36').child('deadlineMs').val() : 1781999400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G36').child('deadlineMs').exists() ? root.child('matchSchedule').child('G36').child('deadlineMs').val() : 1781999400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -599,7 +665,8 @@
           }
         },
         "G37": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782050400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G37').child('deadlineMs').exists() ? root.child('matchSchedule').child('G37').child('deadlineMs').val() : 1782057000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G37').child('deadlineMs').exists() ? root.child('matchSchedule').child('G37').child('deadlineMs').val() : 1782057000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -615,7 +682,8 @@
           }
         },
         "G38": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782061200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G38').child('deadlineMs').exists() ? root.child('matchSchedule').child('G38').child('deadlineMs').val() : 1782067800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G38').child('deadlineMs').exists() ? root.child('matchSchedule').child('G38').child('deadlineMs').val() : 1782067800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -631,7 +699,8 @@
           }
         },
         "G39": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782072000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G39').child('deadlineMs').exists() ? root.child('matchSchedule').child('G39').child('deadlineMs').val() : 1782078600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G39').child('deadlineMs').exists() ? root.child('matchSchedule').child('G39').child('deadlineMs').val() : 1782078600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -647,7 +716,8 @@
           }
         },
         "G40": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782082800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G40').child('deadlineMs').exists() ? root.child('matchSchedule').child('G40').child('deadlineMs').val() : 1782089400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G40').child('deadlineMs').exists() ? root.child('matchSchedule').child('G40').child('deadlineMs').val() : 1782089400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -663,7 +733,8 @@
           }
         },
         "G41": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782090000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G41').child('deadlineMs').exists() ? root.child('matchSchedule').child('G41').child('deadlineMs').val() : 1782183000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G41').child('deadlineMs').exists() ? root.child('matchSchedule').child('G41').child('deadlineMs').val() : 1782183000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -679,7 +750,8 @@
           }
         },
         "G42": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782140400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G42').child('deadlineMs').exists() ? root.child('matchSchedule').child('G42').child('deadlineMs').val() : 1782147000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G42').child('deadlineMs').exists() ? root.child('matchSchedule').child('G42').child('deadlineMs').val() : 1782147000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -695,7 +767,8 @@
           }
         },
         "G43": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782154800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G43').child('deadlineMs').exists() ? root.child('matchSchedule').child('G43').child('deadlineMs').val() : 1782161400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G43').child('deadlineMs').exists() ? root.child('matchSchedule').child('G43').child('deadlineMs').val() : 1782161400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -711,7 +784,8 @@
           }
         },
         "G44": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782165600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G44').child('deadlineMs').exists() ? root.child('matchSchedule').child('G44').child('deadlineMs').val() : 1782172200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G44').child('deadlineMs').exists() ? root.child('matchSchedule').child('G44').child('deadlineMs').val() : 1782172200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -727,7 +801,8 @@
           }
         },
         "G45": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782226800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G45').child('deadlineMs').exists() ? root.child('matchSchedule').child('G45').child('deadlineMs').val() : 1782233400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G45').child('deadlineMs').exists() ? root.child('matchSchedule').child('G45').child('deadlineMs').val() : 1782233400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -743,7 +818,8 @@
           }
         },
         "G46": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782237600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G46').child('deadlineMs').exists() ? root.child('matchSchedule').child('G46').child('deadlineMs').val() : 1782244200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G46').child('deadlineMs').exists() ? root.child('matchSchedule').child('G46').child('deadlineMs').val() : 1782244200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -759,7 +835,8 @@
           }
         },
         "G47": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782248400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G47').child('deadlineMs').exists() ? root.child('matchSchedule').child('G47').child('deadlineMs').val() : 1782255000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G47').child('deadlineMs').exists() ? root.child('matchSchedule').child('G47').child('deadlineMs').val() : 1782255000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -775,7 +852,8 @@
           }
         },
         "G48": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782259200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G48').child('deadlineMs').exists() ? root.child('matchSchedule').child('G48').child('deadlineMs').val() : 1782265800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G48').child('deadlineMs').exists() ? root.child('matchSchedule').child('G48').child('deadlineMs').val() : 1782265800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -791,7 +869,8 @@
           }
         },
         "G49": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782320400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G49').child('deadlineMs').exists() ? root.child('matchSchedule').child('G49').child('deadlineMs').val() : 1782327000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G49').child('deadlineMs').exists() ? root.child('matchSchedule').child('G49').child('deadlineMs').val() : 1782327000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -807,7 +886,8 @@
           }
         },
         "G50": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782320400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G50').child('deadlineMs').exists() ? root.child('matchSchedule').child('G50').child('deadlineMs').val() : 1782327000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G50').child('deadlineMs').exists() ? root.child('matchSchedule').child('G50').child('deadlineMs').val() : 1782327000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -823,7 +903,8 @@
           }
         },
         "G51": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782331200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G51').child('deadlineMs').exists() ? root.child('matchSchedule').child('G51').child('deadlineMs').val() : 1782337800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G51').child('deadlineMs').exists() ? root.child('matchSchedule').child('G51').child('deadlineMs').val() : 1782337800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -839,7 +920,8 @@
           }
         },
         "G52": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782331200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G52').child('deadlineMs').exists() ? root.child('matchSchedule').child('G52').child('deadlineMs').val() : 1782337800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G52').child('deadlineMs').exists() ? root.child('matchSchedule').child('G52').child('deadlineMs').val() : 1782337800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -855,7 +937,8 @@
           }
         },
         "G53": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782342000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G53').child('deadlineMs').exists() ? root.child('matchSchedule').child('G53').child('deadlineMs').val() : 1782348600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G53').child('deadlineMs').exists() ? root.child('matchSchedule').child('G53').child('deadlineMs').val() : 1782348600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -871,7 +954,8 @@
           }
         },
         "G54": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782342000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G54').child('deadlineMs').exists() ? root.child('matchSchedule').child('G54').child('deadlineMs').val() : 1782348600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G54').child('deadlineMs').exists() ? root.child('matchSchedule').child('G54').child('deadlineMs').val() : 1782348600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -887,7 +971,8 @@
           }
         },
         "G55": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782410400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G55').child('deadlineMs').exists() ? root.child('matchSchedule').child('G55').child('deadlineMs').val() : 1782417000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G55').child('deadlineMs').exists() ? root.child('matchSchedule').child('G55').child('deadlineMs').val() : 1782417000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -903,7 +988,8 @@
           }
         },
         "G56": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782410400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G56').child('deadlineMs').exists() ? root.child('matchSchedule').child('G56').child('deadlineMs').val() : 1782417000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G56').child('deadlineMs').exists() ? root.child('matchSchedule').child('G56').child('deadlineMs').val() : 1782417000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -919,7 +1005,8 @@
           }
         },
         "G57": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782421200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G57').child('deadlineMs').exists() ? root.child('matchSchedule').child('G57').child('deadlineMs').val() : 1782427800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G57').child('deadlineMs').exists() ? root.child('matchSchedule').child('G57').child('deadlineMs').val() : 1782427800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -935,7 +1022,8 @@
           }
         },
         "G58": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782421200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G58').child('deadlineMs').exists() ? root.child('matchSchedule').child('G58').child('deadlineMs').val() : 1782427800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G58').child('deadlineMs').exists() ? root.child('matchSchedule').child('G58').child('deadlineMs').val() : 1782427800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -951,7 +1039,8 @@
           }
         },
         "G59": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782432000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G59').child('deadlineMs').exists() ? root.child('matchSchedule').child('G59').child('deadlineMs').val() : 1782438600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G59').child('deadlineMs').exists() ? root.child('matchSchedule').child('G59').child('deadlineMs').val() : 1782438600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -967,7 +1056,8 @@
           }
         },
         "G60": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782432000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G60').child('deadlineMs').exists() ? root.child('matchSchedule').child('G60').child('deadlineMs').val() : 1782438600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G60').child('deadlineMs').exists() ? root.child('matchSchedule').child('G60').child('deadlineMs').val() : 1782438600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -983,7 +1073,8 @@
           }
         },
         "G61": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782493200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G61').child('deadlineMs').exists() ? root.child('matchSchedule').child('G61').child('deadlineMs').val() : 1782499800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G61').child('deadlineMs').exists() ? root.child('matchSchedule').child('G61').child('deadlineMs').val() : 1782499800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -999,7 +1090,8 @@
           }
         },
         "G62": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782493200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G62').child('deadlineMs').exists() ? root.child('matchSchedule').child('G62').child('deadlineMs').val() : 1782499800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G62').child('deadlineMs').exists() ? root.child('matchSchedule').child('G62').child('deadlineMs').val() : 1782499800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1015,7 +1107,8 @@
           }
         },
         "G63": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782511200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G63').child('deadlineMs').exists() ? root.child('matchSchedule').child('G63').child('deadlineMs').val() : 1782517800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G63').child('deadlineMs').exists() ? root.child('matchSchedule').child('G63').child('deadlineMs').val() : 1782517800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1031,7 +1124,8 @@
           }
         },
         "G64": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782511200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G64').child('deadlineMs').exists() ? root.child('matchSchedule').child('G64').child('deadlineMs').val() : 1782517800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G64').child('deadlineMs').exists() ? root.child('matchSchedule').child('G64').child('deadlineMs').val() : 1782517800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1047,7 +1141,8 @@
           }
         },
         "G65": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782522000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G65').child('deadlineMs').exists() ? root.child('matchSchedule').child('G65').child('deadlineMs').val() : 1782528600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G65').child('deadlineMs').exists() ? root.child('matchSchedule').child('G65').child('deadlineMs').val() : 1782528600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1063,7 +1158,8 @@
           }
         },
         "G66": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782522000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G66').child('deadlineMs').exists() ? root.child('matchSchedule').child('G66').child('deadlineMs').val() : 1782528600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G66').child('deadlineMs').exists() ? root.child('matchSchedule').child('G66').child('deadlineMs').val() : 1782528600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1079,7 +1175,8 @@
           }
         },
         "G67": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782586800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G67').child('deadlineMs').exists() ? root.child('matchSchedule').child('G67').child('deadlineMs').val() : 1782593400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G67').child('deadlineMs').exists() ? root.child('matchSchedule').child('G67').child('deadlineMs').val() : 1782593400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1095,7 +1192,8 @@
           }
         },
         "G68": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782586800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G68').child('deadlineMs').exists() ? root.child('matchSchedule').child('G68').child('deadlineMs').val() : 1782593400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G68').child('deadlineMs').exists() ? root.child('matchSchedule').child('G68').child('deadlineMs').val() : 1782593400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1111,7 +1209,8 @@
           }
         },
         "G69": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782595800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G69').child('deadlineMs').exists() ? root.child('matchSchedule').child('G69').child('deadlineMs').val() : 1782602400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G69').child('deadlineMs').exists() ? root.child('matchSchedule').child('G69').child('deadlineMs').val() : 1782602400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1127,7 +1226,8 @@
           }
         },
         "G70": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782595800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G70').child('deadlineMs').exists() ? root.child('matchSchedule').child('G70').child('deadlineMs').val() : 1782602400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G70').child('deadlineMs').exists() ? root.child('matchSchedule').child('G70').child('deadlineMs').val() : 1782602400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1143,7 +1243,8 @@
           }
         },
         "G71": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782604800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G71').child('deadlineMs').exists() ? root.child('matchSchedule').child('G71').child('deadlineMs').val() : 1782611400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G71').child('deadlineMs').exists() ? root.child('matchSchedule').child('G71').child('deadlineMs').val() : 1782611400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1159,7 +1260,8 @@
           }
         },
         "G72": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782604800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('G72').child('deadlineMs').exists() ? root.child('matchSchedule').child('G72').child('deadlineMs').val() : 1782611400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('G72').child('deadlineMs').exists() ? root.child('matchSchedule').child('G72').child('deadlineMs').val() : 1782611400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1175,7 +1277,8 @@
           }
         },
         "R01": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782666000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R01').child('deadlineMs').exists() ? root.child('matchSchedule').child('R01').child('deadlineMs').val() : 1782672600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R01').child('deadlineMs').exists() ? root.child('matchSchedule').child('R01').child('deadlineMs').val() : 1782672600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1191,7 +1294,8 @@
           }
         },
         "R02": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782745200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R02').child('deadlineMs').exists() ? root.child('matchSchedule').child('R02').child('deadlineMs').val() : 1782751800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R02').child('deadlineMs').exists() ? root.child('matchSchedule').child('R02').child('deadlineMs').val() : 1782751800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1207,7 +1311,8 @@
           }
         },
         "R03": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782757800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R03').child('deadlineMs').exists() ? root.child('matchSchedule').child('R03').child('deadlineMs').val() : 1782764400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R03').child('deadlineMs').exists() ? root.child('matchSchedule').child('R03').child('deadlineMs').val() : 1782764400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1223,7 +1328,8 @@
           }
         },
         "R04": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782774000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R04').child('deadlineMs').exists() ? root.child('matchSchedule').child('R04').child('deadlineMs').val() : 1782780600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R04').child('deadlineMs').exists() ? root.child('matchSchedule').child('R04').child('deadlineMs').val() : 1782780600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1239,7 +1345,8 @@
           }
         },
         "R05": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782831600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R05').child('deadlineMs').exists() ? root.child('matchSchedule').child('R05').child('deadlineMs').val() : 1782838200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R05').child('deadlineMs').exists() ? root.child('matchSchedule').child('R05').child('deadlineMs').val() : 1782838200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1255,7 +1362,8 @@
           }
         },
         "R06": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782846000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R06').child('deadlineMs').exists() ? root.child('matchSchedule').child('R06').child('deadlineMs').val() : 1782852600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R06').child('deadlineMs').exists() ? root.child('matchSchedule').child('R06').child('deadlineMs').val() : 1782852600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1271,7 +1379,8 @@
           }
         },
         "R07": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782860400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R07').child('deadlineMs').exists() ? root.child('matchSchedule').child('R07').child('deadlineMs').val() : 1782867000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R07').child('deadlineMs').exists() ? root.child('matchSchedule').child('R07').child('deadlineMs').val() : 1782867000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1287,7 +1396,8 @@
           }
         },
         "R08": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782914400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R08').child('deadlineMs').exists() ? root.child('matchSchedule').child('R08').child('deadlineMs').val() : 1782921000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R08').child('deadlineMs').exists() ? root.child('matchSchedule').child('R08').child('deadlineMs').val() : 1782921000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1303,7 +1413,8 @@
           }
         },
         "R09": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782928800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R09').child('deadlineMs').exists() ? root.child('matchSchedule').child('R09').child('deadlineMs').val() : 1782935400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R09').child('deadlineMs').exists() ? root.child('matchSchedule').child('R09').child('deadlineMs').val() : 1782935400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1319,7 +1430,8 @@
           }
         },
         "R10": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782943200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R10').child('deadlineMs').exists() ? root.child('matchSchedule').child('R10').child('deadlineMs').val() : 1782949800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R10').child('deadlineMs').exists() ? root.child('matchSchedule').child('R10').child('deadlineMs').val() : 1782949800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1335,7 +1447,8 @@
           }
         },
         "R11": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1782954000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R11').child('deadlineMs').exists() ? root.child('matchSchedule').child('R11').child('deadlineMs').val() : 1783047000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R11').child('deadlineMs').exists() ? root.child('matchSchedule').child('R11').child('deadlineMs').val() : 1783047000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1351,7 +1464,8 @@
           }
         },
         "R12": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783011600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R12').child('deadlineMs').exists() ? root.child('matchSchedule').child('R12').child('deadlineMs').val() : 1783018200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R12').child('deadlineMs').exists() ? root.child('matchSchedule').child('R12').child('deadlineMs').val() : 1783018200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1367,7 +1481,8 @@
           }
         },
         "R13": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783026000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R13').child('deadlineMs').exists() ? root.child('matchSchedule').child('R13').child('deadlineMs').val() : 1783032600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R13').child('deadlineMs').exists() ? root.child('matchSchedule').child('R13').child('deadlineMs').val() : 1783032600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1383,7 +1498,8 @@
           }
         },
         "R14": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783094400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R14').child('deadlineMs').exists() ? root.child('matchSchedule').child('R14').child('deadlineMs').val() : 1783101000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R14').child('deadlineMs').exists() ? root.child('matchSchedule').child('R14').child('deadlineMs').val() : 1783101000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1399,7 +1515,8 @@
           }
         },
         "R15": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783101600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R15').child('deadlineMs').exists() ? root.child('matchSchedule').child('R15').child('deadlineMs').val() : 1783115400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R15').child('deadlineMs').exists() ? root.child('matchSchedule').child('R15').child('deadlineMs').val() : 1783115400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1415,7 +1532,8 @@
           }
         },
         "R16": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783121400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('R16').child('deadlineMs').exists() ? root.child('matchSchedule').child('R16').child('deadlineMs').val() : 1783128000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('R16').child('deadlineMs').exists() ? root.child('matchSchedule').child('R16').child('deadlineMs').val() : 1783128000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1431,7 +1549,8 @@
           }
         },
         "O01": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783177200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O01').child('deadlineMs').exists() ? root.child('matchSchedule').child('O01').child('deadlineMs').val() : 1783183800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O01').child('deadlineMs').exists() ? root.child('matchSchedule').child('O01').child('deadlineMs').val() : 1783183800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1447,7 +1566,8 @@
           }
         },
         "O02": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783191600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O02').child('deadlineMs').exists() ? root.child('matchSchedule').child('O02').child('deadlineMs').val() : 1783198200000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O02').child('deadlineMs').exists() ? root.child('matchSchedule').child('O02').child('deadlineMs').val() : 1783198200000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1463,7 +1583,8 @@
           }
         },
         "O03": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783274400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O03').child('deadlineMs').exists() ? root.child('matchSchedule').child('O03').child('deadlineMs').val() : 1783281000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O03').child('deadlineMs').exists() ? root.child('matchSchedule').child('O03').child('deadlineMs').val() : 1783281000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1479,7 +1600,8 @@
           }
         },
         "O04": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783288800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O04').child('deadlineMs').exists() ? root.child('matchSchedule').child('O04').child('deadlineMs').val() : 1783295400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O04').child('deadlineMs').exists() ? root.child('matchSchedule').child('O04').child('deadlineMs').val() : 1783295400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1495,7 +1617,8 @@
           }
         },
         "O05": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783353600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O05').child('deadlineMs').exists() ? root.child('matchSchedule').child('O05').child('deadlineMs').val() : 1783363800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O05').child('deadlineMs').exists() ? root.child('matchSchedule').child('O05').child('deadlineMs').val() : 1783363800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1511,7 +1634,8 @@
           }
         },
         "O06": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783371600000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O06').child('deadlineMs').exists() ? root.child('matchSchedule').child('O06').child('deadlineMs').val() : 1783381800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O06').child('deadlineMs').exists() ? root.child('matchSchedule').child('O06').child('deadlineMs').val() : 1783381800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1527,7 +1651,8 @@
           }
         },
         "O07": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783432800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O07').child('deadlineMs').exists() ? root.child('matchSchedule').child('O07').child('deadlineMs').val() : 1783439400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O07').child('deadlineMs').exists() ? root.child('matchSchedule').child('O07').child('deadlineMs').val() : 1783439400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1543,7 +1668,8 @@
           }
         },
         "O08": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783447200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('O08').child('deadlineMs').exists() ? root.child('matchSchedule').child('O08').child('deadlineMs').val() : 1783453800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('O08').child('deadlineMs').exists() ? root.child('matchSchedule').child('O08').child('deadlineMs').val() : 1783453800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1559,7 +1685,8 @@
           }
         },
         "Q01": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783620000000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('Q01').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q01').child('deadlineMs').val() : 1783626600000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('Q01').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q01').child('deadlineMs').val() : 1783626600000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1575,7 +1702,8 @@
           }
         },
         "Q02": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783702800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('Q02').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q02').child('deadlineMs').val() : 1783709400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('Q02').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q02').child('deadlineMs').val() : 1783709400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1591,7 +1719,8 @@
           }
         },
         "Q03": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783796400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('Q03').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q03').child('deadlineMs').val() : 1783803000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('Q03').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q03').child('deadlineMs').val() : 1783803000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1607,7 +1736,8 @@
           }
         },
         "Q04": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1783807200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('Q04').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q04').child('deadlineMs').val() : 1783817400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('Q04').child('deadlineMs').exists() ? root.child('matchSchedule').child('Q04').child('deadlineMs').val() : 1783817400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1623,7 +1753,8 @@
           }
         },
         "S01": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1784048400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('S01').child('deadlineMs').exists() ? root.child('matchSchedule').child('S01').child('deadlineMs').val() : 1784055000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('S01').child('deadlineMs').exists() ? root.child('matchSchedule').child('S01').child('deadlineMs').val() : 1784055000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1639,7 +1770,8 @@
           }
         },
         "S02": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1784134800000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('S02').child('deadlineMs').exists() ? root.child('matchSchedule').child('S02').child('deadlineMs').val() : 1784141400000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('S02').child('deadlineMs').exists() ? root.child('matchSchedule').child('S02').child('deadlineMs').val() : 1784141400000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1655,7 +1787,8 @@
           }
         },
         "T01": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1784401200000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('T01').child('deadlineMs').exists() ? root.child('matchSchedule').child('T01').child('deadlineMs').val() : 1784407800000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('T01').child('deadlineMs').exists() ? root.child('matchSchedule').child('T01').child('deadlineMs').val() : 1784407800000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1671,7 +1804,8 @@
           }
         },
         "F01": {
-          ".write": "auth != null && auth.uid === $playerId && now < 1784480400000",
+          ".read": "auth != null && (auth.uid === $playerId || now >= (root.child('matchSchedule').child('F01').child('deadlineMs').exists() ? root.child('matchSchedule').child('F01').child('deadlineMs').val() : 1784487000000))",
+          ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists())) && auth.uid === $playerId && now < (root.child('matchSchedule').child('F01').child('deadlineMs').exists() ? root.child('matchSchedule').child('F01').child('deadlineMs').val() : 1784487000000)",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -1699,7 +1833,7 @@
       }
     },
     "matchOverrides": {
-      ".read": "auth != null",
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists()))",
       ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
       "$matchId": {
         ".validate": "newData.hasChildren(['home', 'away', 'updatedAt'])",
@@ -1717,8 +1851,27 @@
         }
       }
     },
+    "matchSchedule": {
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists()))",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$matchId": {
+        ".validate": "newData.hasChildren(['date', 'deadlineMs', 'updatedAt'])",
+        "date": {
+          ".validate": "newData.isString() && newData.val().length >= 16 && newData.val().length <= 40"
+        },
+        "deadlineMs": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
+        "updatedAt": {
+          ".validate": "newData.isString()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
     "results": {
-      ".read": "auth != null",
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('accessRequests').child(auth.uid).child('status').val() === 'approved' || (!root.child('accessRequests').child(auth.uid).exists() && root.child('players').child(auth.uid).exists()))",
       ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
       "$matchId": {
         ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'setAt']) && (!newData.child('winnerSide').exists() || newData.child('winnerSide').val() === 'home' || newData.child('winnerSide').val() === 'away')",

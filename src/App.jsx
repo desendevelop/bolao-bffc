@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { Trophy, Users, ClipboardList, BookOpen, Shield, Wifi, WifiOff, LogOut } from 'lucide-react'
+import { Trophy, TrendingUp, CalendarDays, Users, ClipboardList, BookOpen, Shield, Wifi, WifiOff, LogOut } from 'lucide-react'
 import { AuthScreen } from './components/AuthScreen.jsx'
+import { AccessStatusScreen } from './components/AccessStatusScreen.jsx'
 import { useBolao } from './hooks/useBolao.js'
 import { useAuth } from './hooks/useAuth.js'
 import bffcLogo from './assets/bffc-logo.png'
 import { Ranking }  from './components/Ranking.jsx'
+import { Evolution } from './components/Evolution.jsx'
+import { DayBets } from './components/DayBets.jsx'
 import { Players }  from './components/Players.jsx'
 import { Bets }     from './components/Bets.jsx'
 import { Rules }    from './components/Rules.jsx'
@@ -13,7 +16,9 @@ import './styles.css'
 
 const TABS = [
   { id: 'ranking',  label: 'Ranking',   icon: Trophy },
+  { id: 'evolution', label: 'Evolução', icon: TrendingUp },
   { id: 'bets',     label: 'Palpites',  icon: ClipboardList },
+  { id: 'day-bets', label: 'Palpites do dia', icon: CalendarDays },
   { id: 'players',  label: 'Perfil',    icon: Users },
   { id: 'rules',    label: 'Regras',    icon: BookOpen },
   { id: 'admin',    label: 'Admin',     icon: Shield },
@@ -22,7 +27,7 @@ const TABS = [
 export default function App() {
   const [activeTab, setActiveTab] = useState('ranking')
   const session = useAuth()
-  const bolao = useBolao(session.user, session.authReady)
+  const bolao = useBolao(session.user, session.authReady, session.canAccessBolao)
   const isFirebaseMode = bolao.storageMode === 'firebase'
 
   if (bolao.error) {
@@ -42,7 +47,7 @@ export default function App() {
     )
   }
 
-  if (isFirebaseMode && (!session.authReady || bolao.loading)) {
+  if (isFirebaseMode && (!session.authReady || !session.adminReady || !session.accessReady || (session.canAccessBolao && bolao.loading))) {
     return (
       <div className="loading-screen">
         <div className="loading-spinner" />
@@ -58,6 +63,16 @@ export default function App() {
         onSignUp={session.signUp}
         onResetPassword={session.resetPassword}
         pending={session.pending}
+      />
+    )
+  }
+
+  if (isFirebaseMode && session.user && !session.canAccessBolao) {
+    return (
+      <AccessStatusScreen
+        accessStatus={session.accessStatus}
+        accessRequest={session.accessRequest}
+        onSignOut={session.signOut}
       />
     )
   }
@@ -131,13 +146,32 @@ export default function App() {
                 matches={bolao.matches}
             />
           )}
+          {activeTab === 'evolution' && (
+            <Evolution
+              players={bolao.players}
+              bets={bolao.bets}
+              results={bolao.results}
+              matches={bolao.matches}
+            />
+          )}
           {activeTab === 'bets' && (
             <Bets
               matches={bolao.matches}
+              players={bolao.players}
               currentPlayer={bolao.currentPlayer}
               placeBet={bolao.placeBet}
+              removeBet={bolao.removeBet}
               getResult={bolao.getResult}
               getOwnBet={bolao.getOwnBet}
+              getVisibleBets={bolao.getVisibleBets}
+            />
+          )}
+          {activeTab === 'day-bets' && (
+            <DayBets
+              matches={bolao.matches}
+              currentPlayer={bolao.currentPlayer}
+              getResult={bolao.getResult}
+              getVisibleBets={bolao.getVisibleBets}
             />
           )}
           {activeTab === 'players' && (
@@ -154,13 +188,19 @@ export default function App() {
               currentUser={session.user}
               canManageResults={session.isAdmin}
               adminReady={session.adminReady}
-                matches={bolao.matches}
-                matchOverrides={bolao.matchOverrides}
+              accessRequests={session.accessRequests}
+              reviewAccessRequest={session.reviewAccessRequest}
+              deleteRejectedAccessRequest={session.deleteRejectedAccessRequest}
+              matches={bolao.matches}
+              matchOverrides={bolao.matchOverrides}
+              matchSchedule={bolao.matchSchedule}
               results={bolao.results}
               setResult={bolao.setResult}
               removeResult={bolao.removeResult}
-                saveMatchOverride={bolao.saveMatchOverride}
-                clearMatchOverride={bolao.clearMatchOverride}
+              saveMatchOverride={bolao.saveMatchOverride}
+              clearMatchOverride={bolao.clearMatchOverride}
+              saveMatchSchedule={bolao.saveMatchSchedule}
+              clearMatchSchedule={bolao.clearMatchSchedule}
             />
           )}
         </>
