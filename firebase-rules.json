@@ -1,0 +1,59 @@
+{
+  "rules": {
+    "players": {
+      ".read": true,
+      ".write": true,
+
+      "$playerId": {
+        ".validate": "newData.hasChildren(['name', 'createdAt'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 40"
+        },
+        "createdAt": {
+          ".validate": "newData.isString()"
+        },
+        "$other": { ".validate": false }
+      }
+    },
+
+    "bets": {
+      ".read": true,
+      ".write": true,
+
+      "$playerId": {
+        "$matchId": {
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": { ".validate": false }
+        }
+      }
+    },
+
+    "results": {
+      ".read": true,
+      ".write": true,
+
+      "$matchId": {
+        ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'setAt'])",
+        "homeGoals": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+        },
+        "awayGoals": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+        },
+        "setAt": {
+          ".validate": "newData.isString()"
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
