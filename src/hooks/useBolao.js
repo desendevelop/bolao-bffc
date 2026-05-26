@@ -18,6 +18,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { db, firebaseInitError, isFirebaseConfigured } from '../services/firebase.js'
 import { useBolaoLocal } from './useBolaoLocal.js'
+import { createId } from '../utils/id.js'
 import {
   ref,
   onValue,
@@ -112,7 +113,7 @@ function useBolaoFirebase() {
       return { ok: false, error: 'Jogador já cadastrado' }
     }
 
-    const id = crypto.randomUUID()
+    const id = createId()
     await set(ref(db, `players/${id}`), {
       name: trimmed,
       createdAt: new Date().toISOString(),

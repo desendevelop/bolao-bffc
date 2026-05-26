@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { createId } from '../utils/id.js'
 
 const STORAGE_KEYS = {
   players: 'bolao.players',
@@ -64,7 +65,7 @@ export function useBolaoLocal() {
     }
 
     setPlayers(current => [...current, {
-      id: crypto.randomUUID(),
+      id: createId(),
       name: trimmed,
       createdAt: new Date().toISOString(),
     }])

@@ -5,15 +5,25 @@ export function Players({ players, addPlayer, removePlayer }) {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const trimmed = name.trim()
     if (!trimmed) { setError('Informe um nome'); return }
     if (players.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
       setError('Jogador já cadastrado'); return
     }
-    addPlayer(trimmed)
-    setName('')
-    setError('')
+
+    try {
+      const result = await addPlayer(trimmed)
+      if (result?.ok === false) {
+        setError(result.error ?? 'Não foi possível adicionar o jogador')
+        return
+      }
+
+      setName('')
+      setError('')
+    } catch (err) {
+      setError(err?.message ?? 'Não foi possível adicionar o jogador')
+    }
   }
 
   const handleKey = (e) => {
