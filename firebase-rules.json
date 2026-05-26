@@ -1,27 +1,29 @@
 {
   "rules": {
     "players": {
-      ".read": true,
-      ".write": true,
-
+      ".read": "auth != null",
       "$playerId": {
-        ".validate": "newData.hasChildren(['name', 'createdAt'])",
+        ".write": "auth != null && auth.uid === $playerId",
+        ".validate": "newData.hasChildren(['name', 'email', 'createdAt'])",
         "name": {
           ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 40"
+        },
+        "email": {
+          ".validate": "newData.isString() && newData.val().length >= 5 && newData.val().length <= 120"
         },
         "createdAt": {
           ".validate": "newData.isString()"
         },
-        "$other": { ".validate": false }
+        "$other": {
+          ".validate": false
+        }
       }
     },
-
     "bets": {
-      ".read": true,
-      ".write": true,
-
+      ".read": "auth != null",
       "$playerId": {
-        "$matchId": {
+        "G01": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781183400000",
           ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
           "homeGoals": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
@@ -32,17 +34,1694 @@
           "placedAt": {
             ".validate": "newData.isString()"
           },
-          "$other": { ".validate": false }
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G02": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781222400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G03": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781283600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G04": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781305200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G05": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781316000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G06": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781370000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G07": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781380800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G08": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781391600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G09": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781449200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G10": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781460000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G11": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781470800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G12": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781481600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G13": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781532000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G14": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781542800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G15": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781553600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G16": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781564400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G17": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781575200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G18": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781629200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G19": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781640000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G20": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781650800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G21": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781708400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G22": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781719200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G23": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781730000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G24": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781740800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G25": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781791200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G26": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781802000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G27": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781812800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G28": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781823600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G29": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781834400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G30": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781888400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G31": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781899200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G32": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781908200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G33": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781920800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G34": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781967600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G35": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781978400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G36": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1781992800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G37": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782050400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G38": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782061200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G39": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782072000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G40": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782082800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G41": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782090000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G42": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782140400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G43": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782154800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G44": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782165600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G45": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782226800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G46": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782237600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G47": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782248400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G48": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782259200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G49": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782320400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G50": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782320400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G51": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782331200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G52": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782331200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G53": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782342000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G54": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782342000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G55": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782410400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G56": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782410400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G57": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782421200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G58": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782421200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G59": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782432000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G60": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782432000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G61": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782493200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G62": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782493200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G63": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782511200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G64": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782511200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G65": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782522000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G66": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782522000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G67": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782586800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G68": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782586800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G69": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782595800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G70": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782595800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G71": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782604800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "G72": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782604800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R01": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782666000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R02": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782745200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R03": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782757800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R04": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782774000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R05": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782831600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R06": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782846000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R07": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782860400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R08": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782914400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R09": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782928800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R10": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782943200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R11": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1782954000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R12": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783011600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R13": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783026000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R14": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783094400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R15": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783101600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "R16": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783121400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O01": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783177200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O02": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783191600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O03": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783274400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O04": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783288800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O05": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783353600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O06": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783371600000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O07": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783432800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "O08": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783447200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "Q01": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783620000000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "Q02": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783702800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "Q03": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783796400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "Q04": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1783807200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "S01": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1784048400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "S02": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1784134800000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "T01": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1784401200000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "F01": {
+          ".write": "auth != null && auth.uid === $playerId && now < 1784480400000",
+          ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'placedAt'])",
+          "homeGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "awayGoals": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          },
+          "placedAt": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "$other": {
+          ".validate": false
         }
       }
     },
-
-    "results": {
-      ".read": true,
-      ".write": true,
-
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false,
+        ".validate": "newData.val() === true"
+      }
+    },
+    "matchOverrides": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
       "$matchId": {
-        ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'setAt'])",
+        ".validate": "newData.hasChildren(['home', 'away', 'updatedAt'])",
+        "home": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 60"
+        },
+        "away": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 60"
+        },
+        "updatedAt": {
+          ".validate": "newData.isString()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "results": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$matchId": {
+        ".validate": "newData.hasChildren(['homeGoals', 'awayGoals', 'setAt']) && (!newData.child('winnerSide').exists() || newData.child('winnerSide').val() === 'home' || newData.child('winnerSide').val() === 'away')",
         "homeGoals": {
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
         },
@@ -52,7 +1731,12 @@
         "setAt": {
           ".validate": "newData.isString()"
         },
-        "$other": { ".validate": false }
+        "winnerSide": {
+          ".validate": "newData.val() === 'home' || newData.val() === 'away'"
+        },
+        "$other": {
+          ".validate": false
+        }
       }
     }
   }

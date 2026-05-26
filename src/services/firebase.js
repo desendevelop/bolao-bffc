@@ -30,6 +30,7 @@
  */
 
 import { initializeApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
 import { getDatabase }   from 'firebase/database'
 
 const firebaseConfig = {
@@ -70,6 +71,7 @@ export const isFirebaseConfigured = missing.length === 0
 
 export let firebaseInitError = null
 export let app = null
+export let auth = null
 export let db = null
 
 if (missing.length > 0) {
@@ -81,6 +83,7 @@ if (missing.length > 0) {
 } else {
   try {
     app = initializeApp(firebaseConfig)
+    auth = getAuth(app)
     db  = getDatabase(app)
   } catch (error) {
     firebaseInitError = error

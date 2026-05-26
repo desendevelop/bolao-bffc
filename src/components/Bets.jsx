@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react'
-import { MATCHES, PHASE_CONFIG, getBetDeadline, isBettingOpen } from '../data/matches.js'
-import { calcPoints, getWinner } from '../utils/scoring.js'
-import { Clock, Lock, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { PHASE_CONFIG, getBetDeadline, isBettingOpen } from '../data/matches.js'
+import { calcPoints } from '../utils/scoring.js'
+import { Clock, Lock, ChevronDown, ChevronUp } from 'lucide-react'
 
 function ScoreInput({ value, onChange, disabled }) {
   return (
@@ -21,7 +21,7 @@ function ScoreInput({ value, onChange, disabled }) {
   )
 }
 
-function MatchBetRow({ match, player, bet, result, onSave, isAdmin }) {
+function MatchBetRow({ match, player, bet, result, onSave }) {
   const open = isBettingOpen(match.date)
   const deadline = getBetDeadline(match.date)
   const matchDate = new Date(match.date)
@@ -29,6 +29,7 @@ function MatchBetRow({ match, player, bet, result, onSave, isAdmin }) {
   const [home, setHome] = useState(bet?.homeGoals ?? '')
   const [away, setAway] = useState(bet?.awayGoals ?? '')
   const [dirty, setDirty] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const canBet = open && player
   const hasResult = !!result
@@ -41,12 +42,19 @@ function MatchBetRow({ match, player, bet, result, onSave, isAdmin }) {
   const handleChange = (setter) => (val) => {
     setter(val)
     setDirty(true)
+    setSaveError('')
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (home === '' || away === '') return
-    onSave(match.id, Number(home), Number(away))
-    setDirty(false)
+
+    try {
+      await onSave(match.id, Number(home), Number(away))
+      setDirty(false)
+      setSaveError('')
+    } catch (error) {
+      setSaveError(error?.message ?? 'Não foi possível salvar o palpite.')
+    }
   }
 
   const formatDeadline = (d) =>
@@ -72,26 +80,34 @@ function MatchBetRow({ match, player, bet, result, onSave, isAdmin }) {
 
       <div className="match-bet-area">
         {player && (
-          <div className="bet-input-row">
-            <ScoreInput value={home} onChange={handleChange(setHome)} disabled={!canBet} />
-            <span className="bet-sep">×</span>
-            <ScoreInput value={away} onChange={handleChange(setAway)} disabled={!canBet} />
-            {canBet && (
-              <button
-                className={`btn btn-sm ${dirty ? 'btn-primary' : 'btn-ghost'}`}
-                onClick={handleSave}
-                disabled={home === '' || away === ''}
-                title="Salvar palpite"
-              >
-                {dirty ? 'Salvar' : (bet ? '✓' : '+')}
-              </button>
+          <>
+            <div className="bet-input-row">
+              <ScoreInput value={home} onChange={handleChange(setHome)} disabled={!canBet} />
+              <span className="bet-sep">×</span>
+              <ScoreInput value={away} onChange={handleChange(setAway)} disabled={!canBet} />
+              {canBet && (
+                <button
+                  className={`btn btn-sm ${dirty ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={handleSave}
+                  disabled={home === '' || away === ''}
+                  title="Salvar palpite"
+                >
+                  {dirty ? 'Salvar' : (bet ? '✓' : '+')}
+                </button>
+              )}
+              {!open && !bet && (
+                <span className="lock-icon" title={`Prazo encerrado em ${formatDeadline(deadline)}`}>
+                  <Lock size={14} />
+                </span>
+              )}
+            </div>
+            {!open && !bet && (
+              <div className="bet-locked-message">
+                <Lock size={12} />
+                Já era, você DANILOU
+              </div>
             )}
-            {!open && !hasResult && (
-              <span className="lock-icon" title={`Prazo encerrado em ${formatDeadline(deadline)}`}>
-                <Lock size={14} />
-              </span>
-            )}
-          </div>
+          </>
         )}
 
         {!player && (
@@ -109,7 +125,7 @@ function MatchBetRow({ match, player, bet, result, onSave, isAdmin }) {
               </span>
             )}
             {player && !bet && (
-              <span className="points-badge pts-0">+0 <small>(sem palpite)</small></span>
+              <span className="points-badge pts-0">+0 <small>(SEM PALPITE)</small></span>
             )}
           </div>
         ) : (
@@ -117,25 +133,24 @@ function MatchBetRow({ match, player, bet, result, onSave, isAdmin }) {
         )}
       </div>
 
-      {!open && !hasResult && (
-        <div className="deadline-note">
+      {!open && !bet && (
+        <div className="deadline-note error">
           <Clock size={12} />
-          Prazo: {formatDeadline(deadline)}
+          Já era, você DANILOU. Prazo encerrado em {formatDeadline(deadline)}
+        </div>
+      )}
+      {saveError && (
+        <div className="deadline-note error">
+          <Lock size={12} />
+          {saveError}
         </div>
       )}
     </div>
   )
 }
 
-export function Bets({ players, bets, results, placeBet, getResult, getBet }) {
-  const [selectedPlayer, setSelectedPlayer] = useState(null)
-  const [phaseFilter, setPhaseFilter] = useState('all')
+export function Bets({ matches, currentPlayer, placeBet, getResult, getOwnBet }) {
   const [expandedPhases, setExpandedPhases] = useState({ group: true })
-
-  const resultMap = useMemo(
-    () => Object.fromEntries(results.map(r => [r.matchId, r])),
-    [results]
-  )
 
   const togglePhase = (phase) => {
     setExpandedPhases(prev => ({ ...prev, [phase]: !prev[phase] }))
@@ -143,34 +158,29 @@ export function Bets({ players, bets, results, placeBet, getResult, getBet }) {
 
   const groupedMatches = useMemo(() => {
     const groups = {}
-    for (const m of MATCHES) {
+    for (const m of matches) {
       if (!groups[m.phase]) groups[m.phase] = []
       groups[m.phase].push(m)
     }
     return groups
-  }, [])
+  }, [matches])
 
   return (
     <div className="bets-panel">
       <h2 className="section-title">Palpites</h2>
 
       <div className="bets-controls">
-        <div className="control-group">
-          <label className="control-label">Jogador</label>
-          <select
-            className="select-field"
-            value={selectedPlayer?.id ?? ''}
-            onChange={e => {
-              const p = players.find(p => p.id === e.target.value)
-              setSelectedPlayer(p ?? null)
-            }}
-          >
-            <option value="">Selecione um jogador</option>
-            {players.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
+        {currentPlayer ? (
+          <div className="player-card">
+            <span className="control-label">Palpites de</span>
+            <strong>{currentPlayer.name}</strong>
+            <small>{currentPlayer.email}</small>
+          </div>
+        ) : (
+          <p className="empty-text">
+            Complete seu perfil na aba <strong>Perfil</strong> antes de começar a palpitar.
+          </p>
+        )}
       </div>
 
       <div className="matches-list">
@@ -179,9 +189,8 @@ export function Bets({ players, bets, results, placeBet, getResult, getBet }) {
           if (matches.length === 0) return null
           const expanded = expandedPhases[phaseKey] ?? false
 
-          const closedCount = matches.filter(m => !isBettingOpen(m.date)).length
-          const withBet = selectedPlayer
-            ? matches.filter(m => (bets[selectedPlayer.id] ?? []).some(b => b.matchId === m.id)).length
+          const withBet = currentPlayer
+            ? matches.filter(match => getOwnBet(match.id)).length
             : 0
 
           return (
@@ -195,7 +204,7 @@ export function Bets({ players, bets, results, placeBet, getResult, getBet }) {
                   <span className="phase-mult-tag">{phaseInfo.multiplier}×</span>
                 </span>
                 <span className="phase-toggle-meta">
-                  {selectedPlayer && (
+                  {currentPlayer && (
                     <span className="bet-progress">
                       {withBet}/{matches.length} palpites
                     </span>
@@ -207,16 +216,16 @@ export function Bets({ players, bets, results, placeBet, getResult, getBet }) {
               {expanded && (
                 <div className="phase-matches">
                   {matches.map(match => {
-                    const bet    = selectedPlayer ? getBet(selectedPlayer.id, match.id) : null
+                    const bet = currentPlayer ? getOwnBet(match.id) : null
                     const result = getResult(match.id)
                     return (
                       <MatchBetRow
                         key={match.id}
                         match={match}
-                        player={selectedPlayer}
+                        player={currentPlayer}
                         bet={bet}
                         result={result}
-                        onSave={(matchId, h, a) => placeBet(selectedPlayer.id, matchId, h, a)}
+                        onSave={placeBet}
                       />
                     )
                   })}

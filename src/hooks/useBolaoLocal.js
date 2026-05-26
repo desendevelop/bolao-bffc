@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createId } from '../utils/id.js'
+import { resolveTournamentMatches } from '../utils/tournament.js'
 
 const STORAGE_KEYS = {
   players: 'bolao.players',
   bets: 'bolao.bets',
   results: 'bolao.results',
+  matchOverrides: 'bolao.matchOverrides',
 }
 
 function readJSON(key, fallback) {
@@ -39,10 +40,19 @@ function upsertByMatchId(items, nextItem) {
   return items.map(item => item.matchId === nextItem.matchId ? nextItem : item)
 }
 
-export function useBolaoLocal() {
+const LOCAL_FALLBACK_USER = {
+  uid: 'local-user',
+  email: 'modo-local@local',
+}
+
+export function useBolaoLocal(currentUser = LOCAL_FALLBACK_USER) {
   const [players, setPlayers] = useState(() => readJSON(STORAGE_KEYS.players, []))
   const [bets, setBets] = useState(() => readJSON(STORAGE_KEYS.bets, {}))
   const [results, setResults] = useState(() => readJSON(STORAGE_KEYS.results, []))
+  const [matchOverrides, setMatchOverrides] = useState(() => readJSON(STORAGE_KEYS.matchOverrides, {}))
+  const currentUid = currentUser?.uid ?? LOCAL_FALLBACK_USER.uid
+  const currentPlayer = players.find(player => player.id === currentUid) ?? null
+  const matches = resolveTournamentMatches(results, matchOverrides)
 
   useEffect(() => {
     writeJSON(STORAGE_KEYS.players, players)
@@ -56,33 +66,41 @@ export function useBolaoLocal() {
     writeJSON(STORAGE_KEYS.results, results)
   }, [results])
 
-  const addPlayer = useCallback(async (name) => {
+  useEffect(() => {
+    writeJSON(STORAGE_KEYS.matchOverrides, matchOverrides)
+  }, [matchOverrides])
+
+  const saveOwnProfile = useCallback(async (name) => {
     const trimmed = name.trim()
     if (!trimmed) return { ok: false, error: 'Nome inválido' }
 
-    if (players.some(player => player.name.toLowerCase() === trimmed.toLowerCase())) {
+    if (players.some(player =>
+      player.id !== currentUid &&
+      player.name?.toLowerCase() === trimmed.toLowerCase()
+    )) {
       return { ok: false, error: 'Jogador já cadastrado' }
     }
 
-    setPlayers(current => [...current, {
-      id: createId(),
-      name: trimmed,
-      createdAt: new Date().toISOString(),
-    }])
+    setPlayers(current => {
+      const existing = current.find(player => player.id === currentUid)
+      const nextPlayer = {
+        id: currentUid,
+        name: trimmed,
+        email: currentUser?.email ?? '',
+        createdAt: existing?.createdAt ?? new Date().toISOString(),
+      }
+
+      if (existing) {
+        return current.map(player => player.id === currentUid ? nextPlayer : player)
+      }
+
+      return [...current, nextPlayer]
+    })
 
     return { ok: true }
-  }, [players])
+  }, [currentUid, currentUser?.email, players])
 
-  const removePlayer = useCallback(async (id) => {
-    setPlayers(current => current.filter(player => player.id !== id))
-    setBets(current => {
-      const next = { ...current }
-      delete next[id]
-      return next
-    })
-  }, [])
-
-  const placeBet = useCallback(async (playerId, matchId, homeGoals, awayGoals) => {
+  const placeBet = useCallback(async (matchId, homeGoals, awayGoals) => {
     const nextBet = {
       matchId,
       homeGoals: Number(homeGoals),
@@ -92,22 +110,15 @@ export function useBolaoLocal() {
 
     setBets(current => ({
       ...current,
-      [playerId]: upsertByMatchId(current[playerId] ?? [], nextBet),
+      [currentUid]: upsertByMatchId(current[currentUid] ?? [], nextBet),
     }))
-  }, [])
+  }, [currentUid])
 
-  const removeBet = useCallback(async (playerId, matchId) => {
-    setBets(current => ({
-      ...current,
-      [playerId]: (current[playerId] ?? []).filter(bet => bet.matchId !== matchId),
-    }))
-  }, [])
+  const getOwnBet = useCallback((matchId) => {
+    return (bets[currentUid] ?? []).find(bet => bet.matchId === matchId) ?? null
+  }, [bets, currentUid])
 
-  const getBet = useCallback((playerId, matchId) => {
-    return (bets[playerId] ?? []).find(bet => bet.matchId === matchId) ?? null
-  }, [bets])
-
-  const setResult = useCallback(async (matchId, homeGoals, awayGoals) => {
+  const setResult = useCallback(async (matchId, homeGoals, awayGoals, winnerSide = null) => {
     const nextResult = {
       matchId,
       homeGoals: Number(homeGoals),
@@ -115,11 +126,41 @@ export function useBolaoLocal() {
       setAt: new Date().toISOString(),
     }
 
+    if (winnerSide) {
+      nextResult.winnerSide = winnerSide
+    }
+
     setResults(current => upsertByMatchId(current, nextResult))
   }, [])
 
   const removeResult = useCallback(async (matchId) => {
     setResults(current => current.filter(result => result.matchId !== matchId))
+  }, [])
+
+  const saveMatchOverride = useCallback(async (matchId, home, away) => {
+    const trimmedHome = home.trim()
+    const trimmedAway = away.trim()
+
+    if (!trimmedHome || !trimmedAway) {
+      throw new Error('Informe os dois times para salvar o ajuste manual.')
+    }
+
+    setMatchOverrides(current => ({
+      ...current,
+      [matchId]: {
+        home: trimmedHome,
+        away: trimmedAway,
+        updatedAt: new Date().toISOString(),
+      },
+    }))
+  }, [])
+
+  const clearMatchOverride = useCallback(async (matchId) => {
+    setMatchOverrides(current => {
+      const next = { ...current }
+      delete next[matchId]
+      return next
+    })
   }, [])
 
   const getResult = useCallback((matchId) => {
@@ -130,17 +171,20 @@ export function useBolaoLocal() {
     players,
     bets,
     results,
+    matchOverrides,
+    matches,
     loading: false,
     error: null,
     storageMode: 'local',
     storageLabel: 'Modo local',
-    addPlayer,
-    removePlayer,
+    currentPlayer,
+    saveOwnProfile,
     placeBet,
-    removeBet,
-    getBet,
+    getOwnBet,
     setResult,
     removeResult,
+    saveMatchOverride,
+    clearMatchOverride,
     getResult,
   }
 }

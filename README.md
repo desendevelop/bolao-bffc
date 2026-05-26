@@ -9,7 +9,9 @@ Dados sincronizados em tempo real via **Firebase Realtime Database** — todos o
 - ⏰ Deadline automático: palpites bloqueados 2h antes de cada partida
 - 🏅 Ranking em tempo real com pontuação atualizada conforme resultados
 - 📈 Multiplicadores por fase: pontos valem mais nas fases finais
-- 🔒 Painel Admin protegido por PIN para inserir resultados oficiais
+- 🔐 Login por e-mail e senha para cada participante editar apenas os próprios palpites
+- 🛡️ Painel Admin protegido por permissão real no Firebase
+- 🔄 Chave do mata-mata atualizada automaticamente conforme os resultados oficiais
 - 📖 Regras explicadas na própria plataforma
 - ☁️ Sincronização em tempo real para todos os participantes
 
@@ -50,6 +52,12 @@ npm install
 2. Dê um apelido ao app (ex: `bolao-web`) → **Registrar app**
 3. Copie o objeto `firebaseConfig` que aparecer
 
+### 4.1. Habilite login por e-mail e senha
+
+1. No Firebase Console, vá em **Authentication** → **Get started**
+2. Na aba **Sign-in method**, habilite **Email/Password**
+3. Salve a configuração
+
 ### 5. Configure as variáveis de ambiente
 
 ```bash
@@ -75,6 +83,29 @@ VITE_FIREBASE_APP_ID=1:123456789:web:abcdef
 1. No Firebase Console → **Realtime Database** → aba **Regras**
 2. Substitua o conteúdo pelo arquivo `firebase-rules.json` deste repositório
 3. Clique em **Publicar**
+
+> Se você alterar datas/horários em `src/data/matches.js`, regenere as regras antes de publicar:
+>
+> ```bash
+> npm run rules:generate
+> ```
+
+### 6.1. Defina a conta admin
+
+Depois de criar a conta que será administradora dentro do app:
+
+1. Copie o `uid` dessa conta
+2. No Realtime Database, crie o caminho:
+
+```json
+{
+  "admins": {
+    "SEU_UID_AQUI": true
+  }
+}
+```
+
+Essa conta será a única autorizada a lançar resultados.
 
 ### 7. Rode localmente
 
@@ -133,7 +164,10 @@ Alternativamente, conecte o repositório GitHub ao Netlify para deploy automáti
 
 ## Painel Admin
 
-O PIN padrão é `copa2026`. Para alterar, edite a constante `ADMIN_PIN` em `src/components/Admin.jsx`.
+O painel Admin agora depende da permissão em `/admins/{uid}` no Realtime Database. O acesso não é mais controlado só pela interface.
+
+Nos jogos de mata-mata, se a partida terminar empatada no placar informado, o admin deve indicar quem avançou para que a próxima fase seja preenchida automaticamente.
+Se houver algum caso excepcional no chaveamento, o admin também pode sobrescrever manualmente os times de um confronto do mata-mata e depois limpar esse ajuste quando não for mais necessário.
 
 ---
 
@@ -172,5 +206,7 @@ bolao-copa-2026/
 ## Observações
 
 - A fase eliminatória tem confrontos como "A definir". Quando a FIFA confirmar, atualize `home` e `away` em `src/data/matches.js`.
-- Não há autenticação de usuários — qualquer pessoa com a URL pode palpitar como qualquer jogador. Para um grupo de amigos de confiança, isso é intencional.
+- Cada participante precisa criar sua própria conta com e-mail e senha antes de palpitar.
+- As regras do banco impedem que um usuário altere palpites de outro.
+- O prazo de palpite também é validado nas regras do Firebase, não só na interface.
 - O plano gratuito (Spark) do Firebase suporta 1 GB de armazenamento e 10 GB/mês de transferência — mais do que suficiente para um bolão.

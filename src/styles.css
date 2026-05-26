@@ -55,12 +55,22 @@ body {
   justify-content: space-between;
   gap: 1rem;
 }
+.header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
 .header-title-group {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
-.header-flag { font-size: 2rem; }
+.header-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .header-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 2.4rem;
@@ -78,6 +88,24 @@ body {
 .header-stats {
   display: flex;
   gap: 1.25rem;
+}
+.session-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.15);
+}
+.session-chip strong {
+  display: block;
+  font-size: 0.88rem;
+}
+.session-chip span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 .stat {
   display: flex;
@@ -201,11 +229,53 @@ body {
   text-align: right;
 }
 .player-name { flex: 1; font-weight: 500; }
+.player-email { font-size: 0.72rem; color: var(--text-muted); }
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  margin-bottom: 1rem;
+}
+.profile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.profile-card-header strong,
+.profile-card-header span {
+  display: block;
+}
+.profile-card-header span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.profile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
 
 /* ─── Bets ─────────────────────────────────────────────────────────────────── */
 .bets-controls { margin-bottom: 1.25rem; }
 .control-group { display: flex; flex-direction: column; gap: 0.35rem; }
 .control-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+.player-card {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.player-card strong { font-size: 1rem; }
+.player-card small { color: var(--text-muted); font-size: 0.78rem; }
 
 .phase-section { margin-bottom: 0.6rem; }
 .phase-toggle {
@@ -266,6 +336,20 @@ body {
 .match-group { color: var(--accent); font-weight: 600; }
 
 .bet-input-row { display: flex; align-items: center; gap: 0.35rem; }
+.bet-locked-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(255, 23, 68, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 23, 68, 0.12);
+  color: #ff8aa0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
 .bet-sep { color: var(--text-muted); }
 .lock-icon { color: var(--text-dim); }
 
@@ -285,6 +369,9 @@ body {
   font-size: 0.65rem;
   color: var(--text-dim);
   padding-top: 0.15rem;
+}
+.deadline-note.error {
+  color: var(--red);
 }
 .select-player-hint { font-size: 0.72rem; color: var(--text-dim); font-style: italic; }
 
@@ -402,6 +489,13 @@ body {
 .admin-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
 .admin-header h2 { margin-bottom: 0; }
 .admin-header .btn { margin-left: auto; }
+.admin-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--green);
+}
 
 .phase-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
 .phase-tab {
@@ -440,6 +534,56 @@ body {
 .venue-label { font-size: 0.7rem; color: var(--text-muted); }
 .result-inputs { display: flex; align-items: center; gap: 0.4rem; }
 .result-confirmed { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--green); margin-left: auto; }
+.winner-toggle-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  width: 100%;
+  padding-left: 2rem;
+}
+.override-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  margin-top: 0.35rem;
+  margin-left: 2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface2);
+}
+.override-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.override-badge {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.override-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.override-row .input-field {
+  min-width: 0;
+}
+.override-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+.override-feedback {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
 
 /* ─── Shared inputs & buttons ──────────────────────────────────────────────── */
 .input-field {
@@ -456,6 +600,25 @@ body {
 }
 .input-field:focus { border-color: var(--gold); }
 .input-error { font-size: 0.75rem; color: var(--red); margin-top: 0.25rem; }
+.input-success { font-size: 0.75rem; color: var(--green); margin-top: 0.25rem; }
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  padding: 0 0.7rem;
+}
+.input-with-icon .input-field {
+  border: none;
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+.input-with-icon:focus-within {
+  border-color: var(--gold);
+}
 
 .score-input {
   width: 2.8rem;
@@ -543,6 +706,7 @@ body {
   .col-bets { display: none; }
   .match-row { grid-template-columns: 1fr auto auto; }
   .header-stats { display: none; }
+  .header-logo { width: 56px; height: 56px; }
   .header-title { font-size: 1.8rem; }
 }
 
@@ -610,4 +774,89 @@ body {
   font-size: 0.82rem;
   color: var(--text-dim);
   line-height: 1.6;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.auth-header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.08em;
+  font-size: 2rem;
+  color: var(--gold);
+}
+.auth-header p {
+  margin-top: 0.4rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.auth-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 0.6rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.auth-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+.auth-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.auth-tab.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: #171b11;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.auth-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.auth-link-btn:hover {
+  color: var(--gold);
+}
+.auth-submit {
+  justify-content: center;
+  margin-top: 0.4rem;
 }

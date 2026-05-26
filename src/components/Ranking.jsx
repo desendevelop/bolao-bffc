@@ -1,10 +1,9 @@
 import { calcRanking } from '../utils/scoring.js'
-import { PHASE_CONFIG, MATCHES } from '../data/matches.js'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export function Ranking({ players, bets, results }) {
-  const ranking = calcRanking(players, bets, results, MATCHES)
+export function Ranking({ players, bets, results, matches }) {
+  const ranking = calcRanking(players, bets, results, matches)
 
   if (players.length === 0) {
     return (

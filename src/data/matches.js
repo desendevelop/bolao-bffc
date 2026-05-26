@@ -27,7 +27,7 @@ export const PHASE_CONFIG = {
 // deadline do palpite = dateTime - 2 horas
 export const MATCHES = [
   // ─── FASE DE GRUPOS — 1ª RODADA ───────────────────────────────────────────
-  { id: 'G01', phase: 'group', group: 'A', date: '2026-06-11T16:00:00-03:00', home: 'México',          away: 'África do Sul',  venue: 'Cidade do México' },
+  { id: 'G01', phase: 'group', group: 'A', date: '2026-06-11T12:10:00-03:00', home: 'México',          away: 'África do Sul',  venue: 'Cidade do México' },
   { id: 'G02', phase: 'group', group: 'A', date: '2026-06-11T23:00:00-03:00', home: 'Coreia do Sul',   away: 'República Tcheca', venue: 'Guadalajara' },
   { id: 'G03', phase: 'group', group: 'B', date: '2026-06-12T16:00:00-03:00', home: 'Canadá',          away: 'Bósnia-Herzegovina', venue: 'Toronto' },
   { id: 'G04', phase: 'group', group: 'D', date: '2026-06-12T22:00:00-03:00', home: 'Estados Unidos',  away: 'Paraguai',       venue: 'Los Angeles' },

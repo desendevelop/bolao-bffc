@@ -1,32 +1,8 @@
-/**
- * useBolao.js — Hook principal do bolão com Firebase Realtime Database
- *
- * Interface pública idêntica à versão com localStorage:
- * os componentes não precisam saber que o backend mudou.
- *
- * Sincronização:
- *   - onValue() → listener em tempo real; qualquer mudança no RTDB
- *     chega instantaneamente a todos os clientes conectados.
- *   - set/update/remove → escrita otimista; o listener reage e
- *     atualiza o estado local.
- *
- * Offline:
- *   O Firebase SDK tem cache offline embutido. Operações feitas sem
- *   conexão são enfileiradas e sincronizadas quando a conexão voltar.
- */
-
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { onValue, ref, remove, set } from 'firebase/database'
 import { db, firebaseInitError, isFirebaseConfigured } from '../services/firebase.js'
 import { useBolaoLocal } from './useBolaoLocal.js'
-import { createId } from '../utils/id.js'
-import {
-  ref,
-  onValue,
-  off,
-  set,
-  remove,
-  update,
-} from 'firebase/database'
+import { resolveTournamentMatches } from '../utils/tournament.js'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -48,145 +24,217 @@ function resultsObjToArray(obj) {
   return Object.entries(obj).map(([matchId, val]) => ({ matchId, ...val }))
 }
 
-// ── Hook ──────────────────────────────────────────────────────────────────
+function normalizeMap(obj) {
+  return obj ?? {}
+}
 
-function useBolaoFirebase() {
+function formatWriteError(error) {
+  if (error?.code === 'PERMISSION_DENIED') {
+    return 'Já era, você DANILOU'
+  }
+
+  return error?.message ?? 'Não foi possível salvar no Firebase.'
+}
+
+function useBolaoFirebase(currentUser, authReady) {
   const [players, setPlayers] = useState([])
-  const [bets,    setBets]    = useState({})   // { [playerId]: [{ matchId, homeGoals, awayGoals }] }
+  const [bets, setBets] = useState({})
   const [results, setResults] = useState([])
+  const [matchOverrides, setMatchOverrides] = useState({})
   const [loading, setLoading] = useState(!firebaseInitError)
-  const [error,   setError]   = useState(firebaseInitError?.message ?? null)
-
-  // Guarda os unsubscribers para cleanup no unmount
+  const [error, setError] = useState(firebaseInitError?.message ?? null)
   const listenersRef = useRef([])
+  const currentUid = currentUser?.uid ?? null
+  const currentPlayer = useMemo(
+    () => players.find(player => player.id === currentUid) ?? null,
+    [players, currentUid]
+  )
+  const matches = useMemo(
+    () => resolveTournamentMatches(results, matchOverrides),
+    [results, matchOverrides]
+  )
 
   useEffect(() => {
-    if (firebaseInitError || !db) {
+    listenersRef.current.forEach(unsubscribe => unsubscribe())
+    listenersRef.current = []
+
+    if (firebaseInitError || !db || !authReady) {
+      setLoading(!authReady)
+      if (firebaseInitError) {
+        setError(firebaseInitError.message)
+      }
+      return
+    }
+
+    if (!currentUid) {
+      setPlayers([])
+      setBets({})
+      setResults([])
+      setMatchOverrides({})
+      setError(null)
       setLoading(false)
       return
     }
 
-    const listeners = listenersRef.current
+    setLoading(true)
+    setError(null)
+    const listeners = []
 
-    // ── Players ────────────────────────────────────────────────────────────
     const playersRef = ref(db, 'players')
-    const unsubPlayers = onValue(playersRef, snap => {
+    listeners.push(onValue(playersRef, snap => {
       setPlayers(objToArray(snap.val()))
       setLoading(false)
     }, err => {
       console.error('[Firebase] players:', err)
       setError(err.message)
       setLoading(false)
-    })
-    listeners.push(() => off(playersRef, 'value', unsubPlayers))
+    }))
 
-    // ── Bets ───────────────────────────────────────────────────────────────
     const betsRef = ref(db, 'bets')
-    const unsubBets = onValue(betsRef, snap => {
+    listeners.push(onValue(betsRef, snap => {
       const raw = snap.val() ?? {}
-      // raw = { [playerId]: { [matchId]: { homeGoals, awayGoals, placedAt } } }
       const normalized = {}
       for (const [playerId, playerBets] of Object.entries(raw)) {
         normalized[playerId] = betsObjToArray(playerBets)
       }
       setBets(normalized)
-    }, err => console.error('[Firebase] bets:', err))
-    listeners.push(() => off(betsRef, 'value', unsubBets))
+    }, err => {
+      console.error('[Firebase] bets:', err)
+      setError(err.message)
+    }))
 
-    // ── Results ────────────────────────────────────────────────────────────
     const resultsRef = ref(db, 'results')
-    const unsubResults = onValue(resultsRef, snap => {
+    listeners.push(onValue(resultsRef, snap => {
       setResults(resultsObjToArray(snap.val()))
-    }, err => console.error('[Firebase] results:', err))
-    listeners.push(() => off(resultsRef, 'value', unsubResults))
+    }, err => {
+      console.error('[Firebase] results:', err)
+      setError(err.message)
+    }))
 
-    return () => listeners.forEach(fn => fn())
-  }, [])
+    const overridesRef = ref(db, 'matchOverrides')
+    listeners.push(onValue(overridesRef, snap => {
+      setMatchOverrides(normalizeMap(snap.val()))
+    }, err => {
+      console.error('[Firebase] matchOverrides:', err)
+      setError(err.message)
+    }))
 
-  // ── Jogadores ────────────────────────────────────────────────────────────
+    listenersRef.current = listeners
+    return () => listeners.forEach(unsubscribe => unsubscribe())
+  }, [authReady, currentUid])
 
-  const addPlayer = useCallback(async (name) => {
+  const saveOwnProfile = useCallback(async (name) => {
+    if (!currentUid || !currentUser) {
+      return { ok: false, error: 'Faça login para salvar seu perfil.' }
+    }
+
     const trimmed = name.trim()
     if (!trimmed) return { ok: false, error: 'Nome inválido' }
 
-    if (players.some(p => p.name.toLowerCase() === trimmed.toLowerCase())) {
+    if (players.some(player =>
+      player.id !== currentUid &&
+      player.name?.toLowerCase() === trimmed.toLowerCase()
+    )) {
       return { ok: false, error: 'Jogador já cadastrado' }
     }
 
-    const id = createId()
-    await set(ref(db, `players/${id}`), {
+    await set(ref(db, `players/${currentUid}`), {
       name: trimmed,
-      createdAt: new Date().toISOString(),
+      email: currentUser.email ?? '',
+      createdAt: currentPlayer?.createdAt ?? new Date().toISOString(),
     })
+
     return { ok: true }
-  }, [players])
+  }, [currentPlayer?.createdAt, currentUid, currentUser, players])
 
-  const removePlayer = useCallback(async (id) => {
-    await remove(ref(db, `players/${id}`))
-    await remove(ref(db, `bets/${id}`))
-  }, [])
+  const placeBet = useCallback(async (matchId, homeGoals, awayGoals) => {
+    if (!currentUid) {
+      throw new Error('Faça login para salvar palpites.')
+    }
 
-  // ── Palpites ─────────────────────────────────────────────────────────────
+    try {
+      await set(ref(db, `bets/${currentUid}/${matchId}`), {
+        homeGoals: Number(homeGoals),
+        awayGoals: Number(awayGoals),
+        placedAt: new Date().toISOString(),
+      })
+    } catch (error) {
+      throw new Error(formatWriteError(error))
+    }
+  }, [currentUid])
 
-  const placeBet = useCallback(async (playerId, matchId, homeGoals, awayGoals) => {
-    await set(ref(db, `bets/${playerId}/${matchId}`), {
-      homeGoals: Number(homeGoals),
-      awayGoals: Number(awayGoals),
-      placedAt: new Date().toISOString(),
-    })
-  }, [])
+  const getOwnBet = useCallback((matchId) => {
+    if (!currentUid) return null
+    return (bets[currentUid] ?? []).find(bet => bet.matchId === matchId) ?? null
+  }, [bets, currentUid])
 
-  const removeBet = useCallback(async (playerId, matchId) => {
-    await remove(ref(db, `bets/${playerId}/${matchId}`))
-  }, [])
-
-  const getBet = useCallback((playerId, matchId) => {
-    return (bets[playerId] ?? []).find(b => b.matchId === matchId) ?? null
-  }, [bets])
-
-  // ── Resultados ────────────────────────────────────────────────────────────
-
-  const setResult = useCallback(async (matchId, homeGoals, awayGoals) => {
-    await set(ref(db, `results/${matchId}`), {
+  const setResult = useCallback(async (matchId, homeGoals, awayGoals, winnerSide = null) => {
+    const payload = {
       homeGoals: Number(homeGoals),
       awayGoals: Number(awayGoals),
       setAt: new Date().toISOString(),
-    })
+    }
+
+    if (winnerSide) {
+      payload.winnerSide = winnerSide
+    }
+
+    await set(ref(db, `results/${matchId}`), payload)
   }, [])
 
   const removeResult = useCallback(async (matchId) => {
     await remove(ref(db, `results/${matchId}`))
   }, [])
 
+  const saveMatchOverride = useCallback(async (matchId, home, away) => {
+    const trimmedHome = home.trim()
+    const trimmedAway = away.trim()
+
+    if (!trimmedHome || !trimmedAway) {
+      throw new Error('Informe os dois times para salvar o ajuste manual.')
+    }
+
+    await set(ref(db, `matchOverrides/${matchId}`), {
+      home: trimmedHome,
+      away: trimmedAway,
+      updatedAt: new Date().toISOString(),
+    })
+  }, [])
+
+  const clearMatchOverride = useCallback(async (matchId) => {
+    await remove(ref(db, `matchOverrides/${matchId}`))
+  }, [])
+
   const getResult = useCallback((matchId) => {
     return results.find(r => r.matchId === matchId) ?? null
   }, [results])
-
-  // ── Export ────────────────────────────────────────────────────────────────
 
   return {
     players,
     bets,
     results,
+    matchOverrides,
+    matches,
     loading,
     error,
     storageMode: 'firebase',
     storageLabel: 'Firebase',
-    addPlayer,
-    removePlayer,
+    currentPlayer,
+    saveOwnProfile,
     placeBet,
-    removeBet,
-    getBet,
+    getOwnBet,
     setResult,
     removeResult,
+    saveMatchOverride,
+    clearMatchOverride,
     getResult,
   }
 }
 
-export function useBolao() {
+export function useBolao(currentUser, authReady = true) {
   if (!isFirebaseConfigured) {
-    return useBolaoLocal()
+    return useBolaoLocal(currentUser)
   }
 
-  return useBolaoFirebase()
+  return useBolaoFirebase(currentUser, authReady)
 }

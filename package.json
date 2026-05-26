@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "rules:generate": "node scripts/generate-firebase-rules.mjs"
   },
   "dependencies": {
     "firebase": "^12.13.0",
