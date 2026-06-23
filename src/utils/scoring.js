@@ -186,6 +186,41 @@ export function calcRanking(players, betsDB, results, matches) {
 }
 
 /**
+ * Impacto de um jogo no ranking: posição antes/depois do resultado desse match.
+ *
+ * @param {object[]} players
+ * @param {object} betsDB
+ * @param {object[]} results
+ * @param {object[]} matches
+ * @param {string} matchId
+ * @returns {Record<string, { positionBefore: number, positionAfter: number, delta: number, hasResult: boolean }>}
+ */
+export function calcMatchRankingImpact(players, betsDB, results, matches, matchId) {
+  const resultsWithoutMatch = results.filter(result => result.matchId !== matchId)
+  const rankingBefore = withRankingPositions(calcRanking(players, betsDB, resultsWithoutMatch, matches))
+  const matchResult = results.find(result => result.matchId === matchId)
+
+  const rankingAfter = matchResult
+    ? withRankingPositions(calcRanking(players, betsDB, results, matches))
+    : rankingBefore
+
+  const beforeById = Object.fromEntries(rankingBefore.map(entry => [entry.id, entry.position]))
+  const afterById = Object.fromEntries(rankingAfter.map(entry => [entry.id, entry.position]))
+  const fallbackPosition = players.length || 1
+
+  return Object.fromEntries(players.map(player => {
+    const positionBefore = beforeById[player.id] ?? fallbackPosition
+    const positionAfter = afterById[player.id] ?? fallbackPosition
+
+    return [player.id, {
+      positionBefore,
+      positionAfter,
+      delta: positionBefore - positionAfter,
+      hasResult: !!matchResult,
+    }]
+  }))
+}
+/**
  * Gera a evolução do ranking após cada resultado lançado.
  *
  * @param {object[]} players

@@ -189,6 +189,9 @@ export default function App() {
           {activeTab === 'day-bets' && (
             <DayBets
               matches={bolao.matches}
+              players={bolao.players}
+              bets={bolao.bets}
+              results={bolao.results}
               currentPlayer={bolao.currentPlayer}
               getResult={bolao.getResult}
               getVisibleBets={bolao.getVisibleBets}

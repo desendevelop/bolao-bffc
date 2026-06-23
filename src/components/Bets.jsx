@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PHASE_CONFIG, getBetDeadline, isBettingOpen, sortMatchesByDate } from '../data/matches.js'
 import { PastMatchesGroup } from './PastMatchesGroup.jsx'
 import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
@@ -259,6 +259,11 @@ function MatchBetRow({ match, player, bet, result, selectedVisibleEntry, onSave,
 export function Bets({ matches, players, currentPlayer, placeBet, removeBet, getResult, getOwnBet, getVisibleBets }) {
   const [expandedPhases, setExpandedPhases] = useState({ group: true })
   const [selectedRevealPlayerId, setSelectedRevealPlayerId] = useState('')
+  const userPickedRevealPlayer = useRef(false)
+
+  useEffect(() => {
+    userPickedRevealPlayer.current = false
+  }, [currentPlayer?.id])
 
   useEffect(() => {
     if (players.length === 0) {
@@ -266,14 +271,24 @@ export function Bets({ matches, players, currentPlayer, placeBet, removeBet, get
       return
     }
 
-    const availableIds = players.map(player => player.id)
-    if (selectedRevealPlayerId && availableIds.includes(selectedRevealPlayerId)) return
+    const availableIds = new Set(players.map(player => player.id))
 
-    const defaultPlayer = currentPlayer?.id && availableIds.includes(currentPlayer.id)
-      ? currentPlayer
-      : players[0]
-    setSelectedRevealPlayerId(defaultPlayer?.id ?? '')
-  }, [players, currentPlayer?.id, selectedRevealPlayerId])
+    setSelectedRevealPlayerId(prev => {
+      if (userPickedRevealPlayer.current && prev && availableIds.has(prev)) {
+        return prev
+      }
+
+      if (currentPlayer?.id && availableIds.has(currentPlayer.id)) {
+        return currentPlayer.id
+      }
+
+      if (prev && availableIds.has(prev)) {
+        return prev
+      }
+
+      return players[0]?.id ?? ''
+    })
+  }, [players, currentPlayer?.id])
 
   const togglePhase = (phase) => {
     setExpandedPhases(prev => ({ ...prev, [phase]: !prev[phase] }))
@@ -334,7 +349,10 @@ export function Bets({ matches, players, currentPlayer, placeBet, removeBet, get
                 <select
                   className="select-field"
                   value={selectedRevealPlayerId}
-                  onChange={event => setSelectedRevealPlayerId(event.target.value)}
+                  onChange={event => {
+                    userPickedRevealPlayer.current = true
+                    setSelectedRevealPlayerId(event.target.value)
+                  }}
                 >
                   {players.map(player => (
                     <option key={player.id} value={player.id}>

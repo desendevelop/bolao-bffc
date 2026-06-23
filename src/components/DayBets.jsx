@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, Lock } from 'lucide-react'
+import { CalendarDays, Lock, Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { isBettingOpen, sortMatchesByDate } from '../data/matches.js'
 import { PastMatchesGroup } from './PastMatchesGroup.jsx'
 import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
-import { calcPoints } from '../utils/scoring.js'
+import { calcMatchRankingImpact, calcPoints } from '../utils/scoring.js'
 import { BRAZIL_TIMEZONE, getCalendarDayKey, getMatchDayKey } from '../utils/dates.js'
 
 function formatDayLabel(dayKey) {
@@ -23,7 +23,48 @@ function formatMatchHour(matchDate) {
   })
 }
 
-function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false }) {
+function LiveRankingShift({ impact }) {
+  if (!impact) return null
+
+  const { positionAfter, delta, hasResult } = impact
+  let movementClass = 'day-match-rank-shift--same'
+  let movementIcon = <Minus size={15} strokeWidth={2.5} />
+  let movementLabel = 'Manteve a posição'
+
+  if (!hasResult) {
+    return (
+      <span className="day-match-rank-shift day-match-rank-shift--pending" title="Posição atual no ranking (aguardando placar deste jogo)">
+        <span className="day-match-rank-pos">#{positionAfter}</span>
+        <span className="day-match-rank-move">—</span>
+      </span>
+    )
+  }
+
+  if (delta > 0) {
+    movementClass = 'day-match-rank-shift--up'
+    movementIcon = <TrendingUp size={15} strokeWidth={2.5} />
+    movementLabel = delta === 1 ? 'Subiu 1 posição neste jogo' : `Subiu ${delta} posições neste jogo`
+  } else if (delta < 0) {
+    movementClass = 'day-match-rank-shift--down'
+    movementIcon = <TrendingDown size={15} strokeWidth={2.5} />
+    movementLabel = delta === -1 ? 'Caiu 1 posição neste jogo' : `Caiu ${Math.abs(delta)} posições neste jogo`
+  }
+
+  return (
+    <span
+      className={`day-match-rank-shift ${movementClass}`}
+      title={`${movementLabel}. Posição atual: #${positionAfter}`}
+    >
+      <span className="day-match-rank-pos">#{positionAfter}</span>
+      <span className="day-match-rank-move">
+        {movementIcon}
+        {delta === 0 ? '=' : (delta > 0 ? `+${delta}` : delta)}
+      </span>
+    </span>
+  )
+}
+
+function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false, rankingImpact = null }) {
   const open = isBettingOpen(match.date)
   const submittedCount = entries.filter(entry => !!entry.bet).length
   const orderedEntries = [...entries].sort((left, right) => {
@@ -69,7 +110,10 @@ function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false 
             return (
               <div key={`${match.id}-${player.id}`} className={`day-match-bet-row ${isCurrentPlayer ? 'current' : ''}`}>
                 <div className="day-match-bet-player">
-                  <strong>{player.name}</strong>
+                  <div className="day-match-bet-player-top">
+                    <strong>{player.name}</strong>
+                    {isLive && <LiveRankingShift impact={rankingImpact?.[player.id] ?? null} />}
+                  </div>
                   <span>{isCurrentPlayer ? 'Você' : (player.email ?? 'Participante')}</span>
                 </div>
 
@@ -97,7 +141,7 @@ function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false 
   )
 }
 
-export function DayBets({ matches, currentPlayer, getResult, getVisibleBets }) {
+export function DayBets({ matches, players, bets, results, currentPlayer, getResult, getVisibleBets }) {
   const dayOptions = useMemo(() => {
     const uniqueDayKeys = [...new Set(matches.map(match => getMatchDayKey(match.date)))].sort()
     return uniqueDayKeys.map(dayKey => ({
@@ -130,16 +174,23 @@ export function DayBets({ matches, currentPlayer, getResult, getVisibleBets }) {
   const lockedCount = dayMatches.filter(match => !isBettingOpen(match.date)).length
   const liveMatchIds = useLiveMatchIds(dayMatches)
 
-  const renderDayMatchCard = (match, isLive = false) => (
-    <DayMatchCard
-      key={match.id}
-      match={match}
-      entries={getVisibleBets ? getVisibleBets(match.id) : []}
-      result={getResult(match.id)}
-      currentPlayerId={currentPlayer?.id ?? null}
-      isLive={isLive}
-    />
-  )
+  const renderDayMatchCard = (match, isLive = false) => {
+    const rankingImpact = isLive && players.length > 0
+      ? calcMatchRankingImpact(players, bets, results, matches, match.id)
+      : null
+
+    return (
+      <DayMatchCard
+        key={match.id}
+        match={match}
+        entries={getVisibleBets ? getVisibleBets(match.id) : []}
+        result={getResult(match.id)}
+        currentPlayerId={currentPlayer?.id ?? null}
+        isLive={isLive}
+        rankingImpact={rankingImpact}
+      />
+    )
+  }
 
   return (
     <div className="day-bets">
