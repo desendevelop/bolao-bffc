@@ -4,13 +4,11 @@ import { isBettingOpen, sortMatchesByDate } from '../data/matches.js'
 import { PastMatchesGroup } from './PastMatchesGroup.jsx'
 import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
 import { calcPoints } from '../utils/scoring.js'
-
-function getDayKey(matchDate) {
-  return matchDate.slice(0, 10)
-}
+import { BRAZIL_TIMEZONE, getCalendarDayKey, getMatchDayKey } from '../utils/dates.js'
 
 function formatDayLabel(dayKey) {
   return new Date(`${dayKey}T12:00:00-03:00`).toLocaleDateString('pt-BR', {
+    timeZone: BRAZIL_TIMEZONE,
     weekday: 'long',
     day: '2-digit',
     month: '2-digit',
@@ -19,6 +17,7 @@ function formatDayLabel(dayKey) {
 
 function formatMatchHour(matchDate) {
   return new Date(matchDate).toLocaleTimeString('pt-BR', {
+    timeZone: BRAZIL_TIMEZONE,
     hour: '2-digit',
     minute: '2-digit',
   })
@@ -100,7 +99,7 @@ function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false 
 
 export function DayBets({ matches, currentPlayer, getResult, getVisibleBets }) {
   const dayOptions = useMemo(() => {
-    const uniqueDayKeys = [...new Set(matches.map(match => getDayKey(match.date)))].sort()
+    const uniqueDayKeys = [...new Set(matches.map(match => getMatchDayKey(match.date)))].sort()
     return uniqueDayKeys.map(dayKey => ({
       value: dayKey,
       label: formatDayLabel(dayKey),
@@ -115,7 +114,7 @@ export function DayBets({ matches, currentPlayer, getResult, getVisibleBets }) {
       return
     }
 
-    const todayKey = new Date().toISOString().slice(0, 10)
+    const todayKey = getCalendarDayKey()
     const defaultDay = dayOptions.find(option => option.value === todayKey)?.value ?? dayOptions[0].value
 
     setSelectedDay(current => (
@@ -124,7 +123,7 @@ export function DayBets({ matches, currentPlayer, getResult, getVisibleBets }) {
   }, [dayOptions])
 
   const dayMatches = useMemo(
-    () => sortMatchesByDate(matches.filter(match => getDayKey(match.date) === selectedDay)),
+    () => sortMatchesByDate(matches.filter(match => getMatchDayKey(match.date) === selectedDay)),
     [matches, selectedDay],
   )
 
