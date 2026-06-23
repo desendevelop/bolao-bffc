@@ -149,6 +149,14 @@ export const MATCHES = [
   { id: 'F01', phase: 'final', group: null, date: '2026-07-19T16:00:00-03:00', home: 'A definir', away: 'A definir', venue: 'Nova York/NJ — MetLife Stadium' },
 ]
 
+export function compareMatchesByDate(left, right) {
+  return new Date(left.date).getTime() - new Date(right.date).getTime()
+}
+
+export function sortMatchesByDate(matches) {
+  return [...matches].sort(compareMatchesByDate)
+}
+
 export function applyMatchSchedule(baseMatches, matchSchedule = {}) {
   return baseMatches.map(match => {
     const scheduled = matchSchedule?.[match.id]
@@ -175,4 +183,50 @@ export function getBetDeadline(matchDate) {
  */
 export function isBettingOpen(matchDate) {
   return new Date() < getBetDeadline(matchDate)
+}
+
+/**
+ * Verifica se o jogo já começou (horário de início no passado)
+ */
+export function isMatchPast(matchDate) {
+  return new Date() >= new Date(matchDate)
+}
+
+/** Duração estimada de uma partida (inclui acréscimos / prorrogação curta) */
+export const MATCH_LIVE_DURATION_MS = 165 * 60 * 1000
+
+/**
+ * Jogo ao vivo: já começou e ainda dentro da janela estimada da partida.
+ * Ter resultado salvo não remove da seção — o admin pode lançar o placar durante o jogo.
+ */
+export function isMatchLive(matchDate, now = new Date()) {
+  const kickoff = new Date(matchDate).getTime()
+  const current = now.getTime()
+  if (current < kickoff) return false
+
+  return current - kickoff < MATCH_LIVE_DURATION_MS
+}
+
+export function formatLiveElapsed(matchDate, now = new Date()) {
+  const minutes = Math.floor((now.getTime() - new Date(matchDate).getTime()) / 60000)
+  if (minutes < 1) return 'Começou agora'
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const remainder = minutes % 60
+  return remainder ? `${hours}h${String(remainder).padStart(2, '0')}` : `${hours}h`
+}
+
+export function partitionLiveMatches(matches, now = new Date()) {
+  const live = []
+  const rest = []
+
+  for (const match of matches) {
+    if (isMatchLive(match.date, now)) {
+      live.push(match)
+    } else {
+      rest.push(match)
+    }
+  }
+
+  return { live: sortMatchesByDate(live), rest }
 }

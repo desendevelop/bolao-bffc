@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PHASE_CONFIG, getBetDeadline, isBettingOpen } from '../data/matches.js'
+import { PHASE_CONFIG, getBetDeadline, isBettingOpen, sortMatchesByDate } from '../data/matches.js'
+import { PastMatchesGroup } from './PastMatchesGroup.jsx'
+import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
 import { calcPoints } from '../utils/scoring.js'
 import { Clock, Lock, ChevronDown, ChevronUp, Minus, Plus, Trash2 } from 'lucide-react'
 
@@ -88,7 +90,7 @@ function SelectedRevealedBet({ match, entry, result, currentPlayerId }) {
   )
 }
 
-function MatchBetRow({ match, player, bet, result, selectedVisibleEntry, onSave, onRemove }) {
+function MatchBetRow({ match, player, bet, result, selectedVisibleEntry, onSave, onRemove, isLive = false }) {
   const open = isBettingOpen(match.date)
   const deadline = getBetDeadline(match.date)
   const matchDate = new Date(match.date)
@@ -149,7 +151,7 @@ function MatchBetRow({ match, player, bet, result, selectedVisibleEntry, onSave,
   }
 
   return (
-    <div className={`match-row ${hasResult ? 'has-result' : ''} ${!open ? 'locked' : ''} ${points === 5 ? 'perfect' : ''}`}>
+    <div className={`match-row ${hasResult ? 'has-result' : ''} ${!open ? 'locked' : ''} ${points === 5 ? 'perfect' : ''} ${isLive ? 'live' : ''}`}>
       <div className="match-info">
         <div className="match-teams">
           <span className="team home">{match.home}</span>
@@ -281,8 +283,35 @@ export function Bets({ matches, players, currentPlayer, placeBet, removeBet, get
       if (!groups[m.phase]) groups[m.phase] = []
       groups[m.phase].push(m)
     }
+    for (const phase of Object.keys(groups)) {
+      groups[phase] = sortMatchesByDate(groups[phase])
+    }
     return groups
   }, [matches])
+
+  const liveMatchIds = useLiveMatchIds(matches)
+
+  const renderMatchBetRow = (match, isLive = false) => {
+    const bet = currentPlayer ? getOwnBet(match.id) : null
+    const result = getResult(match.id)
+    const selectedVisibleEntry = selectedRevealPlayerId && getVisibleBets
+      ? getVisibleBets(match.id).find(entry => entry.player.id === selectedRevealPlayerId) ?? null
+      : null
+
+    return (
+      <MatchBetRow
+        key={match.id}
+        match={match}
+        player={currentPlayer}
+        bet={bet}
+        result={result}
+        selectedVisibleEntry={selectedVisibleEntry}
+        onSave={placeBet}
+        onRemove={removeBet}
+        isLive={isLive}
+      />
+    )
+  }
 
   return (
     <div className="bets-panel">
@@ -322,14 +351,19 @@ export function Bets({ matches, players, currentPlayer, placeBet, removeBet, get
         )}
       </div>
 
+      <LiveMatchSection
+        matches={matches}
+        renderMatch={match => renderMatchBetRow(match, true)}
+      />
+
       <div className="matches-list">
         {Object.entries(PHASE_CONFIG).map(([phaseKey, phaseInfo]) => {
-          const matches = groupedMatches[phaseKey] ?? []
-          if (matches.length === 0) return null
+          const phaseMatches = (groupedMatches[phaseKey] ?? []).filter(match => !liveMatchIds.has(match.id))
+          if (phaseMatches.length === 0) return null
           const expanded = expandedPhases[phaseKey] ?? false
 
           const withBet = currentPlayer
-            ? matches.filter(match => getOwnBet(match.id)).length
+            ? phaseMatches.filter(match => getOwnBet(match.id)).length
             : 0
 
           return (
@@ -345,7 +379,7 @@ export function Bets({ matches, players, currentPlayer, placeBet, removeBet, get
                 <span className="phase-toggle-meta">
                   {currentPlayer && (
                     <span className="bet-progress">
-                      {withBet}/{matches.length} palpites
+                      {withBet}/{phaseMatches.length} palpites
                     </span>
                   )}
                   {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -354,25 +388,11 @@ export function Bets({ matches, players, currentPlayer, placeBet, removeBet, get
 
               {expanded && (
                 <div className="phase-matches">
-                  {matches.map(match => {
-                    const bet = currentPlayer ? getOwnBet(match.id) : null
-                    const result = getResult(match.id)
-                    const selectedVisibleEntry = selectedRevealPlayerId && getVisibleBets
-                      ? getVisibleBets(match.id).find(entry => entry.player.id === selectedRevealPlayerId) ?? null
-                      : null
-                    return (
-                      <MatchBetRow
-                        key={match.id}
-                        match={match}
-                        player={currentPlayer}
-                        bet={bet}
-                        result={result}
-                        selectedVisibleEntry={selectedVisibleEntry}
-                        onSave={placeBet}
-                        onRemove={removeBet}
-                      />
-                    )
-                  })}
+                  <PastMatchesGroup
+                    matches={phaseMatches}
+                    excludeIds={liveMatchIds}
+                    renderMatch={match => renderMatchBetRow(match)}
+                  />
                 </div>
               )}
             </div>

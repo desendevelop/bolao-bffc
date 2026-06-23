@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PHASE_CONFIG } from '../data/matches.js'
+import { PHASE_CONFIG, sortMatchesByDate } from '../data/matches.js'
+import { PastMatchesGroup } from './PastMatchesGroup.jsx'
+import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
 import { Shield, Save, Trash2, Lock, Wand2, Minus, Plus, ChevronDown, ChevronUp } from 'lucide-react'
 
 function stepScoreValue(value, delta) {
@@ -74,6 +76,7 @@ function ResultInput({
   onClearOverride,
   onSaveSchedule,
   onClearSchedule,
+  isLive = false,
 }) {
   const [home, setHome] = useState(currentResult?.homeGoals ?? '')
   const [away, setAway] = useState(currentResult?.awayGoals ?? '')
@@ -138,7 +141,7 @@ function ResultInput({
   }
 
   return (
-    <div className={`result-row ${currentResult ? 'has-result' : ''}`}>
+    <div className={`result-row ${currentResult ? 'has-result' : ''} ${isLive ? 'live' : ''}`}>
       <div className="result-match-info">
         <span className="match-id-badge">{match.id}</span>
         <div className="admin-match-summary">
@@ -375,10 +378,31 @@ export function Admin({
     [results]
   )
 
-  const filteredMatches = matches.filter(m => m.phase === phaseFilter)
+  const filteredMatches = useMemo(
+    () => sortMatchesByDate(matches.filter(m => m.phase === phaseFilter)),
+    [matches, phaseFilter],
+  )
   const pendingRequests = accessRequests.filter(request => request.status === 'pending')
   const approvedRequests = accessRequests.filter(request => request.status === 'approved')
   const rejectedRequests = accessRequests.filter(request => request.status === 'rejected')
+  const liveMatchIds = useLiveMatchIds(filteredMatches)
+
+  const renderResultInput = (match, isLive = false) => (
+    <ResultInput
+      key={match.id}
+      match={match}
+      currentResult={resultMap[match.id] ?? null}
+      currentOverride={matchOverrides?.[match.id] ?? null}
+      currentSchedule={matchSchedule?.[match.id] ?? null}
+      onSave={setResult}
+      onRemove={removeResult}
+      onSaveOverride={saveMatchOverride}
+      onClearOverride={clearMatchOverride}
+      onSaveSchedule={saveMatchSchedule}
+      onClearSchedule={clearMatchSchedule}
+      isLive={isLive}
+    />
+  )
 
   useEffect(() => {
     if (pendingRequests.length > 0) {
@@ -553,25 +577,20 @@ export function Admin({
         ))}
       </div>
 
+      <LiveMatchSection
+        matches={filteredMatches}
+        renderMatch={match => renderResultInput(match, true)}
+      />
+
       <div className="results-list">
         {filteredMatches.length === 0 ? (
           <p className="empty-text">Nenhum jogo nesta fase.</p>
         ) : (
-          filteredMatches.map(match => (
-            <ResultInput
-              key={match.id}
-              match={match}
-              currentResult={resultMap[match.id] ?? null}
-              currentOverride={matchOverrides?.[match.id] ?? null}
-              currentSchedule={matchSchedule?.[match.id] ?? null}
-              onSave={setResult}
-              onRemove={removeResult}
-              onSaveOverride={saveMatchOverride}
-              onClearOverride={clearMatchOverride}
-              onSaveSchedule={saveMatchSchedule}
-              onClearSchedule={clearMatchSchedule}
-            />
-          ))
+          <PastMatchesGroup
+            matches={filteredMatches}
+            excludeIds={liveMatchIds}
+            renderMatch={match => renderResultInput(match)}
+          />
         )}
       </div>
     </div>

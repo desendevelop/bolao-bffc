@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, Lock } from 'lucide-react'
-import { isBettingOpen } from '../data/matches.js'
+import { isBettingOpen, sortMatchesByDate } from '../data/matches.js'
+import { PastMatchesGroup } from './PastMatchesGroup.jsx'
+import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
 import { calcPoints } from '../utils/scoring.js'
 
 function getDayKey(matchDate) {
@@ -22,7 +24,7 @@ function formatMatchHour(matchDate) {
   })
 }
 
-function DayMatchCard({ match, entries, result, currentPlayerId }) {
+function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false }) {
   const open = isBettingOpen(match.date)
   const submittedCount = entries.filter(entry => !!entry.bet).length
   const orderedEntries = [...entries].sort((left, right) => {
@@ -32,7 +34,7 @@ function DayMatchCard({ match, entries, result, currentPlayerId }) {
   })
 
   return (
-    <div className={`day-match-card ${open ? 'hidden' : 'revealed'}`}>
+    <div className={`day-match-card ${open ? 'hidden' : 'revealed'} ${isLive ? 'live' : ''}`}>
       <div className="day-match-header">
         <div>
           <strong>{match.home} × {match.away}</strong>
@@ -122,11 +124,23 @@ export function DayBets({ matches, currentPlayer, getResult, getVisibleBets }) {
   }, [dayOptions])
 
   const dayMatches = useMemo(
-    () => matches.filter(match => getDayKey(match.date) === selectedDay),
+    () => sortMatchesByDate(matches.filter(match => getDayKey(match.date) === selectedDay)),
     [matches, selectedDay],
   )
 
   const lockedCount = dayMatches.filter(match => !isBettingOpen(match.date)).length
+  const liveMatchIds = useLiveMatchIds(dayMatches)
+
+  const renderDayMatchCard = (match, isLive = false) => (
+    <DayMatchCard
+      key={match.id}
+      match={match}
+      entries={getVisibleBets ? getVisibleBets(match.id) : []}
+      result={getResult(match.id)}
+      currentPlayerId={currentPlayer?.id ?? null}
+      isLive={isLive}
+    />
+  )
 
   return (
     <div className="day-bets">
@@ -160,16 +174,17 @@ export function DayBets({ matches, currentPlayer, getResult, getVisibleBets }) {
         </div>
       </div>
 
+      <LiveMatchSection
+        matches={dayMatches}
+        renderMatch={match => renderDayMatchCard(match, true)}
+      />
+
       <div className="day-bets-list">
-        {dayMatches.map(match => (
-          <DayMatchCard
-            key={match.id}
-            match={match}
-            entries={getVisibleBets ? getVisibleBets(match.id) : []}
-            result={getResult(match.id)}
-            currentPlayerId={currentPlayer?.id ?? null}
-          />
-        ))}
+        <PastMatchesGroup
+          matches={dayMatches}
+          excludeIds={liveMatchIds}
+          renderMatch={match => renderDayMatchCard(match)}
+        />
       </div>
     </div>
   )
