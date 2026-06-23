@@ -198,6 +198,43 @@ body {
 .ranking-row.rank-1 { border-color: var(--gold); background: linear-gradient(90deg, #1a1600 0%, var(--surface) 100%); }
 .ranking-row.rank-2 { border-color: #aaa; }
 .ranking-row.rank-3 { border-color: #c07840; }
+.ranking-umbral-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.35rem 0 0.15rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.ranking-umbral-divider::before,
+.ranking-umbral-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed var(--text-dim);
+}
+.ranking-umbral-divider span {
+  flex-shrink: 0;
+  padding: 0 0.15rem;
+}
+.ranking-row--relegation-1 {
+  border-color: #c9a227;
+  background: linear-gradient(90deg, color-mix(in srgb, #c9a227 10%, transparent) 0%, var(--surface) 72%);
+}
+.ranking-row--relegation-1:hover { border-color: #dbb52e; }
+.ranking-row--relegation-2 {
+  border-color: #d4742e;
+  background: linear-gradient(90deg, color-mix(in srgb, #d4742e 10%, transparent) 0%, var(--surface) 72%);
+}
+.ranking-row--relegation-2:hover { border-color: #e8893f; }
+.ranking-row--relegation-3 {
+  border-color: var(--red);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--red) 12%, transparent) 0%, var(--surface) 72%);
+}
+.ranking-row--relegation-3:hover { border-color: #ff4d6d; }
 .col-pos { font-size: 1.2rem; }
 .rank-num { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: var(--text-muted); }
 .col-name { font-weight: 600; }
