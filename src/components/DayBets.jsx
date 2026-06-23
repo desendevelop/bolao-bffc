@@ -67,11 +67,23 @@ function LiveRankingShift({ impact }) {
 function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false, rankingImpact = null }) {
   const open = isBettingOpen(match.date)
   const submittedCount = entries.filter(entry => !!entry.bet).length
-  const orderedEntries = [...entries].sort((left, right) => {
-    if (left.player.id === currentPlayerId) return -1
-    if (right.player.id === currentPlayerId) return 1
-    return left.player.name.localeCompare(right.player.name, 'pt-BR')
-  })
+  const orderedEntries = useMemo(() => {
+    const list = [...entries]
+
+    if (isLive && rankingImpact) {
+      return list.sort((left, right) => {
+        const leftPos = rankingImpact[left.player.id]?.positionAfter ?? Number.MAX_SAFE_INTEGER
+        const rightPos = rankingImpact[right.player.id]?.positionAfter ?? Number.MAX_SAFE_INTEGER
+        return leftPos - rightPos || left.player.name.localeCompare(right.player.name, 'pt-BR')
+      })
+    }
+
+    return list.sort((left, right) => {
+      if (left.player.id === currentPlayerId) return -1
+      if (right.player.id === currentPlayerId) return 1
+      return left.player.name.localeCompare(right.player.name, 'pt-BR')
+    })
+  }, [entries, isLive, rankingImpact, currentPlayerId])
 
   return (
     <div className={`day-match-card ${open ? 'hidden' : 'revealed'} ${isLive ? 'live' : ''}`}>
