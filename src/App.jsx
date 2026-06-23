@@ -12,6 +12,8 @@ import { Players }  from './components/Players.jsx'
 import { Bets }     from './components/Bets.jsx'
 import { Rules }    from './components/Rules.jsx'
 import { Admin }    from './components/Admin.jsx'
+import { Highlights } from './components/Highlights.jsx'
+import { HighlightsCTA } from './components/HighlightsCTA.jsx'
 import './styles.css'
 
 const TABS = [
@@ -26,6 +28,7 @@ const TABS = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('ranking')
+  const [highlightRound, setHighlightRound] = useState('group-1')
   const session = useAuth()
   const bolao = useBolao(session.user, session.authReady, session.canAccessBolao)
   const isFirebaseMode = bolao.storageMode === 'firebase'
@@ -105,7 +108,13 @@ export default function App() {
             )}
           </div>
 
-          <div className="header-stats">
+          <div className="header-aside">
+            <HighlightsCTA
+              selectedRound={highlightRound}
+              onSelectRound={setHighlightRound}
+              onOpen={() => setActiveTab('highlights')}
+            />
+            <div className="header-stats">
             <>
               <span className="stat">{bolao.players.length} <small>jogadores</small></span>
               <span className="stat">{bolao.results.length} <small>resultados</small></span>
@@ -116,6 +125,7 @@ export default function App() {
                 {isFirebaseMode ? <Wifi size={13} /> : <WifiOff size={13} />}
               </span>
             </>
+            </div>
           </div>
         </div>
       </header>
@@ -144,6 +154,16 @@ export default function App() {
               bets={bolao.bets}
               results={bolao.results}
                 matches={bolao.matches}
+            />
+          )}
+          {activeTab === 'highlights' && (
+            <Highlights
+              players={bolao.players}
+              bets={bolao.bets}
+              results={bolao.results}
+              matches={bolao.matches}
+              selectedRound={highlightRound}
+              onRoundChange={setHighlightRound}
             />
           )}
           {activeTab === 'evolution' && (
