@@ -267,10 +267,12 @@ export function Bets({ matches, players, currentPlayer, placeBet, removeBet, get
     }
 
     const availableIds = players.map(player => player.id)
-    if (availableIds.includes(selectedRevealPlayerId)) return
+    if (selectedRevealPlayerId && availableIds.includes(selectedRevealPlayerId)) return
 
-    const fallbackPlayer = players.find(player => player.id !== currentPlayer?.id) ?? players[0]
-    setSelectedRevealPlayerId(fallbackPlayer?.id ?? '')
+    const defaultPlayer = currentPlayer?.id && availableIds.includes(currentPlayer.id)
+      ? currentPlayer
+      : players[0]
+    setSelectedRevealPlayerId(defaultPlayer?.id ?? '')
   }, [players, currentPlayer?.id, selectedRevealPlayerId])
 
   const togglePhase = (phase) => {
