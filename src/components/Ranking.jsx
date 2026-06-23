@@ -39,10 +39,11 @@ export function Ranking({ players, bets, results, matches }) {
               <small>pts</small>
             </span>
             <span className="col-bets">
-              <span className="bet-stat">{betCount} palpites</span>
+              <span className="bet-stat exact">{player.exactHits} exato{player.exactHits !== 1 ? 's' : ''}</span>
               {resultCount > 0 && (
                 <span className="bet-stat accent">{player.scoredHits}/{resultCount} pontuaram</span>
               )}
+              <span className="bet-stat bet-stat--desktop">{betCount} palpites</span>
             </span>
           </div>
         )

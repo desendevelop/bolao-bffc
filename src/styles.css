@@ -206,6 +206,7 @@ body {
 .col-pts small { font-size: 0.7rem; color: var(--text-muted); }
 .col-bets { display: flex; flex-direction: column; gap: 0.15rem; }
 .bet-stat { font-size: 0.72rem; color: var(--text-muted); }
+.bet-stat.exact { color: var(--gold); font-weight: 600; }
 .bet-stat.accent { color: var(--green); }
 .ranking-footer { text-align: right; font-size: 0.72rem; color: var(--text-dim); padding-top: 0.5rem; }
 
@@ -1429,9 +1430,24 @@ body {
 /* ─── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .app-main { padding: 1rem 0.75rem; }
-  .ranking-header,
-  .ranking-row { grid-template-columns: 2.5rem 1fr 4rem; }
-  .col-bets { display: none; }
+  .ranking-header { grid-template-columns: 2.5rem 1fr 4rem; }
+  .ranking-header .col-bets { display: none; }
+  .ranking-row {
+    grid-template-columns: 2.5rem 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0.2rem 0.75rem;
+    align-items: center;
+  }
+  .col-bets {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    grid-column: 2 / -1;
+    grid-row: 2;
+    padding-top: 0.1rem;
+  }
+  .bet-stat--desktop { display: none; }
   .evolution-card {
     padding: 0.8rem 0.65rem;
   }
