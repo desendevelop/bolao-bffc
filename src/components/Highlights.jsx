@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { calcRanking } from '../utils/scoring.js'
 import { getStaticRoundHighlight, isStaticHighlightPublished } from '../data/roundHighlights.js'
-import { HIGHLIGHT_ROUNDS, getHighlightRound, getCumulativeMatchesThroughRound, getRoundMatches, getRoundResultStatus } from '../data/rounds.js'
+import { HIGHLIGHT_ROUNDS, getHighlightRound, getRoundMatches, getRoundResultStatus } from '../data/rounds.js'
 
 function HighlightBlock({ variant, playerName, roleLabel, imageSrc, text }) {
   const isLeader = variant === 'leader'
@@ -43,19 +43,14 @@ export function Highlights({ players, bets, results, matches, selectedRound, onR
   const published = getStaticRoundHighlight(selectedRound)
   const hasPublishedContent = isStaticHighlightPublished(published)
 
-  const cumulativeMatches = useMemo(
-    () => getCumulativeMatchesThroughRound(matches, selectedRound),
-    [matches, selectedRound],
+  const roundRanking = useMemo(
+    () => calcRanking(players, bets, results, roundMatches),
+    [players, bets, results, roundMatches],
   )
 
-  const cumulativeRanking = useMemo(
-    () => calcRanking(players, bets, results, cumulativeMatches),
-    [players, bets, results, cumulativeMatches],
-  )
-
-  const highlightLeader = cumulativeRanking[0] ?? null
-  const highlightUmbral = cumulativeRanking.length > 0
-    ? cumulativeRanking[cumulativeRanking.length - 1]
+  const highlightLeader = roundRanking[0] ?? null
+  const highlightUmbral = roundRanking.length > 0
+    ? roundRanking[roundRanking.length - 1]
     : null
 
   return (
@@ -101,7 +96,7 @@ export function Highlights({ players, bets, results, matches, selectedRound, onR
       ) : (
         <>
           <p className="highlights-intro">
-            Acumulado do início da copa até o fim de <strong>{round.label}</strong>:
+            <strong>{round.label}</strong> (só jogos da rodada):
             {' '}destaque <strong>{highlightLeader?.name ?? '—'}</strong>
             {highlightLeader && <>({highlightLeader.total} pts)</>}
             {highlightUmbral && highlightUmbral.id !== highlightLeader?.id && (
@@ -117,7 +112,7 @@ export function Highlights({ players, bets, results, matches, selectedRound, onR
               <HighlightBlock
                 variant="leader"
                 playerName={highlightLeader.name}
-                roleLabel={`Mais pontos até ${round.label}`}
+                roleLabel={`Mais pontos na ${round.label}`}
                 imageSrc={published.leaderImage}
                 text={published.leaderText}
               />
@@ -126,7 +121,7 @@ export function Highlights({ players, bets, results, matches, selectedRound, onR
               <HighlightBlock
                 variant="umbral"
                 playerName={highlightUmbral.name}
-                roleLabel={`Menos pontos até ${round.label}`}
+                roleLabel={`Menos pontos na ${round.label}`}
                 imageSrc={published.umbralImage}
                 text={published.umbralText}
               />

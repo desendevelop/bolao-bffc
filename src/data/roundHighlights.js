@@ -8,13 +8,15 @@
  * 3. Commit + push → GitHub Pages atualiza sozinho
  *
  * As imagens e textos são personalizados por você.
- * Os nomes exibidos vêm de quem mais e quem menos pontuou do início da copa
- * até o fim da rodada selecionada.
+ * Os nomes exibidos vêm de quem mais e quem menos pontuou só nos jogos da rodada.
  */
 
 import group1Leader from '../assets/highlights/group-1-leader.png'
 import group1Umbral from '../assets/highlights/group-1-umbral.png'
 import group1Article from '../content/highlights/group-1.md?raw'
+import group2Leader from '../assets/highlights/group-2-leader.png'
+import group2Umbral from '../assets/highlights/group-2-umbral.png'
+import group2Article from '../content/highlights/group-2.md?raw'
 
 export const ROUND_HIGHLIGHTS = {
   'group-1': {
@@ -23,6 +25,13 @@ export const ROUND_HIGHLIGHTS = {
     leaderText: '',
     umbralText: '',
     article: group1Article,
+  },
+  'group-2': {
+    leaderImage: group2Leader,
+    umbralImage: group2Umbral,
+    leaderText: '',
+    umbralText: '',
+    article: group2Article,
   },
 }
 
