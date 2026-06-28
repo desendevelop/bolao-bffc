@@ -17,6 +17,9 @@ import group1Article from '../content/highlights/group-1.md?raw'
 import group2Leader from '../assets/highlights/group-2-leader.png'
 import group2Umbral from '../assets/highlights/group-2-umbral.png'
 import group2Article from '../content/highlights/group-2.md?raw'
+import group3Leader from '../assets/highlights/group-3-leader.png'
+import group3Umbral from '../assets/highlights/group-3-umbral.png'
+import group3Article from '../content/highlights/group-3.md?raw'
 
 export const ROUND_HIGHLIGHTS = {
   'group-1': {
@@ -32,6 +35,13 @@ export const ROUND_HIGHLIGHTS = {
     leaderText: '',
     umbralText: '',
     article: group2Article,
+  },
+  'group-3': {
+    leaderImage: group3Leader,
+    umbralImage: group3Umbral,
+    leaderText: '',
+    umbralText: '',
+    article: group3Article,
   },
 }
 
