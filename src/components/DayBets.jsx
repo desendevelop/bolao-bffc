@@ -3,7 +3,7 @@ import { CalendarDays, Lock, Minus, TrendingDown, TrendingUp } from 'lucide-reac
 import { isBettingOpen, sortMatchesByDate } from '../data/matches.js'
 import { PastMatchesGroup } from './PastMatchesGroup.jsx'
 import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
-import { calcMatchRankingImpact, calcPoints } from '../utils/scoring.js'
+import { calcMatchRankingImpact, calcPoints, formatPoints, pointsBadgeClass } from '../utils/scoring.js'
 import { BRAZIL_TIMEZONE, getCalendarDayKey, getMatchDayKey } from '../utils/dates.js'
 
 function formatDayLabel(dayKey) {
@@ -138,7 +138,7 @@ function DayMatchCard({ match, entries, result, currentPlayerId, isLive = false,
 
                   {result && (
                     bet ? (
-                      <span className={`points-badge pts-${points}`}>+{points}</span>
+                      <span className={`points-badge ${pointsBadgeClass(points)}`}>+{formatPoints(points)}</span>
                     ) : (
                       <span className="points-badge pts-0">+0</span>
                     )

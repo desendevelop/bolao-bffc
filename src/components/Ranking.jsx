@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { calcRanking, withRankingPositions } from '../utils/scoring.js'
+import { calcRanking, formatPoints, withRankingPositions } from '../utils/scoring.js'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 const RELEGATION_MIN_PLAYERS = 4
@@ -54,7 +54,7 @@ export function Ranking({ players, bets, results, matches }) {
             </span>
             <span className="col-name">{player.name}</span>
             <span className="col-pts">
-              <strong>{player.total}</strong>
+              <strong>{formatPoints(player.total)}</strong>
               <small>pts</small>
             </span>
             <span className="col-bets">

@@ -21,7 +21,8 @@
  *   3º Lugar         → 4.0x
  *   Final            → 5.0x
  *
- * Os pontos finais são arredondados para cima (Math.ceil) para evitar decimais.
+ * Os pontos finais preservam decimais quando o multiplicador não é inteiro
+ * (ex.: 1 ponto base × 1,5 na Rodada de 32 = 1,5 pts).
  */
 
 import { PHASE_CONFIG } from '../data/matches.js'
@@ -74,8 +75,42 @@ export function calcBasePoints(bet, result) {
 }
 
 /**
+ * Normaliza pontos para evitar ruído de ponto flutuante (ex.: 1.4999999 → 1.5).
+ */
+export function normalizePoints(points) {
+  return Math.round(points * 10) / 10
+}
+
+/**
+ * Formata pontos para exibição (pt-BR: vírgula como separador decimal).
+ */
+export function formatPoints(points) {
+  const normalized = normalizePoints(points)
+  if (Number.isInteger(normalized)) return String(normalized)
+  return normalized.toLocaleString('pt-BR', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })
+}
+
+/**
+ * Classe CSS do badge de pontos (evita tokens inválidos como "pts-1.5").
+ */
+export function pointsBadgeClass(points) {
+  if (points <= 0) return 'pts-0'
+
+  const tiers = [25, 20, 15, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  const value = Number.isInteger(points) ? points : Math.floor(points)
+
+  for (const tier of tiers) {
+    if (value >= tier) return `pts-${tier}`
+  }
+
+  return 'pts-1'
+}
+
+/**
  * Calcula os pontos finais aplicando o multiplicador de fase.
- * Arredonda para cima para evitar decimais chatos.
  *
  * @param {object} bet    - { homeGoals, awayGoals }
  * @param {object} result - { homeGoals, awayGoals }
@@ -85,7 +120,7 @@ export function calcBasePoints(bet, result) {
 export function calcPoints(bet, result, phase) {
   const base = calcBasePoints(bet, result)
   const multiplier = PHASE_CONFIG[phase]?.multiplier ?? 1
-  return Math.ceil(base * multiplier)
+  return normalizePoints(base * multiplier)
 }
 
 /**

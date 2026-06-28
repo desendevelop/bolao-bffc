@@ -56,7 +56,7 @@ export function Rules() {
         <h3>Multiplicadores por fase</h3>
         <p>
           Os pontos base são multiplicados conforme a importância da fase.
-          Os pontos finais são sempre arredondados para cima.
+          Quando o resultado não é inteiro (ex.: 1 × 1,5), o valor decimal é mantido.
         </p>
 
         <div className="phase-cards">

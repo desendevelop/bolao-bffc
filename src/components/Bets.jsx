@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { PHASE_CONFIG, getBetDeadline, isBettingOpen, sortMatchesByDate } from '../data/matches.js'
 import { PastMatchesGroup } from './PastMatchesGroup.jsx'
 import { LiveMatchSection, useLiveMatchIds } from './LiveMatchSection.jsx'
-import { calcPoints } from '../utils/scoring.js'
+import { calcBasePoints, calcPoints, formatPoints, pointsBadgeClass } from '../utils/scoring.js'
 import { Clock, Lock, ChevronDown, ChevronUp, Minus, Plus, Trash2 } from 'lucide-react'
 
 function stepScoreValue(value, delta) {
@@ -80,7 +80,7 @@ function SelectedRevealedBet({ match, entry, result, currentPlayerId }) {
 
         {result && (
           bet ? (
-            <span className={`points-badge pts-${points}`}>+{points}</span>
+            <span className={`points-badge ${pointsBadgeClass(points)}`}>+{formatPoints(points)}</span>
           ) : (
             <span className="points-badge pts-0">+0</span>
           )
@@ -111,8 +111,10 @@ function MatchBetRow({ match, player, bet, result, selectedVisibleEntry, onSave,
   }, [bet?.homeGoals, bet?.awayGoals, bet?.matchId])
 
   let points = null
+  let isPerfect = false
   if (hasResult && bet) {
     points = calcPoints(bet, result, match.phase)
+    isPerfect = calcBasePoints(bet, result) === 5
   }
 
   const handleChange = (setter) => (val) => {
@@ -151,7 +153,7 @@ function MatchBetRow({ match, player, bet, result, selectedVisibleEntry, onSave,
   }
 
   return (
-    <div className={`match-row ${hasResult ? 'has-result' : ''} ${!open ? 'locked' : ''} ${points === 5 ? 'perfect' : ''} ${isLive ? 'live' : ''}`}>
+    <div className={`match-row ${hasResult ? 'has-result' : ''} ${!open ? 'locked' : ''} ${isPerfect ? 'perfect' : ''} ${isLive ? 'live' : ''}`}>
       <div className="match-info">
         <div className="match-teams">
           <span className="team home">{match.home}</span>
@@ -219,8 +221,8 @@ function MatchBetRow({ match, player, bet, result, selectedVisibleEntry, onSave,
           <div className="result-display">
             <span className="result-score">{result.homeGoals} × {result.awayGoals}</span>
             {player && bet && (
-              <span className={`points-badge pts-${points}`}>
-                +{points}
+              <span className={`points-badge ${pointsBadgeClass(points)}`}>
+                +{formatPoints(points)}
               </span>
             )}
             {player && !bet && (

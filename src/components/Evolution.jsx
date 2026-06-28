@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { PHASE_CONFIG } from '../data/matches.js'
-import { calcRankingHistory } from '../utils/scoring.js'
+import { calcRankingHistory, formatPoints } from '../utils/scoring.js'
 
 const PLAYER_COLORS = [
   '#00e5ff',
@@ -340,7 +340,7 @@ export function Evolution({ players, bets, results, matches }) {
                 <span>{tooltip.point.matchId} · {PHASE_CONFIG[tooltip.point.phase]?.label ?? tooltip.point.phase}</span>
                 <span>{formatMatchMoment(tooltip.point.date)}</span>
                 <span>Posição: #{tooltip.point.position}</span>
-                <span>Pontos acumulados: {tooltip.point.total}</span>
+                <span>Pontos acumulados: {formatPoints(tooltip.point.total)}</span>
               </div>
             )}
           </div>
@@ -361,7 +361,7 @@ export function Evolution({ players, bets, results, matches }) {
               <span className="evolution-color" style={{ '--player-color': player.color }} />
               <div>
                 <strong>{player.name}</strong>
-                <span>Posição atual #{player.latestPosition} • {player.latestTotal} pts</span>
+                <span>Posição atual #{player.latestPosition} • {formatPoints(player.latestTotal)} pts</span>
                 <span>{active ? 'Clique para ocultar' : 'Clique para mostrar'}</span>
               </div>
             </button>

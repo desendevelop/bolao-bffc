@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { calcRanking } from '../utils/scoring.js'
+import { calcRanking, formatPoints } from '../utils/scoring.js'
 import { getStaticRoundHighlight, isStaticHighlightPublished } from '../data/roundHighlights.js'
 import { HIGHLIGHT_ROUNDS, getHighlightRound, getRoundMatches, getRoundResultStatus } from '../data/rounds.js'
 
@@ -98,11 +98,11 @@ export function Highlights({ players, bets, results, matches, selectedRound, onR
           <p className="highlights-intro">
             <strong>{round.label}</strong> (só jogos da rodada):
             {' '}destaque <strong>{highlightLeader?.name ?? '—'}</strong>
-            {highlightLeader && <>({highlightLeader.total} pts)</>}
+            {highlightLeader && <>({formatPoints(highlightLeader.total)} pts)</>}
             {highlightUmbral && highlightUmbral.id !== highlightLeader?.id && (
               <>
                 {' '}· UMBRAL <strong>{highlightUmbral.name}</strong>
-                ({highlightUmbral.total} pts)
+                ({formatPoints(highlightUmbral.total)} pts)
               </>
             )}
           </p>
